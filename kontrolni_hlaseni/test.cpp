@@ -122,14 +122,44 @@ bool CVATRegister::newCompany ( const string    & name,
                                const string    & taxID )
 {
     Company company (name, addr, taxID);
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany(  company );
-        } ); pos != db . end ())
-        return false;
-
+    if (!companyExists(company))
+    {
         db.push_back(company);
         return true;
+    }
+    return false;
+}
+
+bool CVATRegister::cancelCompany ( const string & name, const string & addr )
+{
+    string loweredName = Company::toLower(const_cast<string &>(name));
+    string loweredAddr = Company::toLower(const_cast<string &>(addr));
+    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
+        {
+            return x . isSameCompany(  name , addr );
+        } ); pos != db . end ())
+    {
+        *pos = db . back ();
+        db . pop_back ();
+
+        return true;
+    }
+    return false;
+}
+
+bool CVATRegister::cancelCompany ( const string & taxID )
+{
+    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
+        {
+            return x . isSameCompany(  taxID );
+        } ); pos != db . end ())
+    {
+        *pos = db . back ();
+        db . pop_back ();
+
+        return true;
+    }
+    return false;
 }
 
 #ifndef __PROGTEST__
