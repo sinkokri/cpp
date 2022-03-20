@@ -18,11 +18,20 @@ using namespace std;
 class Company
 {
 public:
-    Company( const string name, const string addr, const string taxID ):
-        name ( name ),
-        addr ( addr ),
-        taxID ( taxID )
-        {};
+    Company(  string name,  string addr, const string& taxID )
+        {
+            for_each(name.begin(), name.end(), []( char & c ){
+                c = tolower(c);
+            });
+            for_each(addr.begin(), addr.end(), []( char & c ){
+                c = tolower(c);
+            });
+            this->name = name;
+            this->addr = addr;
+            this->taxID = taxID;
+        };
+    ~Company ( void ) {};
+    static string toLower( string & str );
     bool   isSameCompany ( const Company & x ) const
     {
         return name == x . name and addr == x . addr
