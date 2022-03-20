@@ -92,9 +92,30 @@ class CVATRegister
     bool          nextCompany    ( string          & name,
                                    string          & addr ) const;
     unsigned int  medianInvoice  ( void ) const;
+    bool companyExists(const Company & company) const;
+    bool companyExists(const string & name, const string & address ) const;
   private:
     vector <Company> db;
 };
+bool CVATRegister::companyExists( const Company & company ) const
+{
+    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
+        {
+            return x . isSameCompany(  company );
+        } ); pos != db . end ())
+        return true;
+    return false;
+}
+
+bool CVATRegister::companyExists( const string & name, const string & address ) const
+{
+    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
+        {
+            return x . isSameCompany(  name , address );
+        } ); pos != db . end ())
+        return true;
+    return false;
+}
 
 bool CVATRegister::newCompany ( const string    & name,
                                const string    & addr,
