@@ -38,7 +38,16 @@ public:
                or
                taxID == x . taxID;
     }
-    ~Company ( void ) {};
+    bool   isSameCompany ( const string & name, const string & addr ) const
+    {
+        return this->name == name and this->addr == addr;
+    }
+
+    bool   isSameCompany ( const string & taxID ) const
+    {
+        return this->taxID == taxID;
+    }
+
 private:
     string name;
     string addr;
