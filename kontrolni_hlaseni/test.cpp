@@ -54,6 +54,14 @@ private:
     string taxID;
 };
 
+string Company::toLower ( string & str )
+{
+    for_each(str.begin(), str.end(), []( char & c ){
+        c = tolower(c);
+    });
+    return str;
+}
+
 
 class CVATRegister
 {
