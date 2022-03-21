@@ -65,12 +65,30 @@ private:
     unsigned int invoiceSum;
 };
 
-string Company::toLower ( string & str )
+bool Company::comparator ( const Company & left, const Company & right  )
 {
-    for_each(str.begin(), str.end(), []( char & c ){
+    int i = right . loweredName .compare( left . loweredName );
+    if  ( i == 0 )
+    {
+        int j = right . loweredAddr .compare( left . loweredAddr );
+        if ( j == 0 or j > 0 )
+            return true;
+        else return false;
+    }
+    if ( i > 0 )
+        return true;
+
+    return false;
+
+}
+
+string Company::getLower ( const string & str )
+{
+    string tmp = str;
+    for_each(tmp.begin(), tmp.end(), []( char & c ){
         c = tolower(c);
     });
-    return str;
+    return tmp;
 }
 
 
