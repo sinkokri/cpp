@@ -68,7 +68,7 @@ class CVATRegister
   public:
                   CVATRegister   ( void )
                   {
-
+                      invoiceCount = 0;
                   };
                   ~CVATRegister  ( void ) {};
     bool          newCompany     ( const string    & name,
@@ -94,8 +94,11 @@ class CVATRegister
     unsigned int  medianInvoice  ( void ) const;
     bool companyExists(const Company & company) const;
     bool companyExists(const string & name, const string & address ) const;
+
   private:
     vector <Company> db;
+    unsigned int invoiceCount;
+    vector <unsigned int> invoices;
 };
 bool CVATRegister::companyExists( const Company & company ) const
 {
@@ -160,6 +163,43 @@ bool CVATRegister::cancelCompany ( const string & taxID )
         return true;
     }
     return false;
+}
+
+bool CVATRegister::invoice( const string & taxID, unsigned int amount )
+{
+    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
+        {
+            return x . isSameCompany(  taxID );
+        } ); pos != db . end ())
+    {
+        invoiceCount += 1;
+        invoices.insert(lower_bound(invoices.begin(), invoices.end(), amount), amount);
+        return true;
+    }
+    return false;
+}
+
+bool CVATRegister::invoice ( const string & name, const string & addr, unsigned int amount )
+{
+    string loweredName = Company::toLower(const_cast<string &>(name));
+    string loweredAddr = Company::toLower(const_cast<string &>(addr));
+
+    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
+        {
+            return x . isSameCompany(  name , addr );
+        } ); pos != db . end ())
+    {
+        invoiceCount += 1;
+        invoices.insert(lower_bound(invoices.begin(), invoices.end(), amount), amount);
+        return true;
+    }
+    return false;
+
+}
+
+unsigned int CVATRegister::medianInvoice ( void ) const
+{
+        return invoiceCount == 0 ? 0 : invoices.at(invoiceCount/2);
 }
 
 #ifndef __PROGTEST__
