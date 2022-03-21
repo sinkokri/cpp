@@ -18,40 +18,51 @@ using namespace std;
 class Company
 {
 public:
-    Company(  string name,  string addr, const string& taxID )
+    Company( const string & name, const string & addr, const string & taxID )
         {
-            for_each(name.begin(), name.end(), []( char & c ){
-                c = tolower(c);
-            });
-            for_each(addr.begin(), addr.end(), []( char & c ){
-                c = tolower(c);
-            });
-            this->name = name;
-            this->addr = addr;
-            this->taxID = taxID;
+            this -> name = name;
+            this -> loweredName = getLower( name );
+            this -> addr = addr;
+            this -> loweredAddr = getLower( addr );
+            this -> taxID = taxID;
+            this -> invoiceSum = 0;
         };
+    
     ~Company ( void ) {};
-    static string toLower( string & str );
-    bool   isSameCompany ( const Company & x ) const
+
+    static string getLower ( const string & str );
+
+    bool isSameCompany ( const Company & x ) const
     {
-        return name == x . name and addr == x . addr
-               or
-               taxID == x . taxID;
+        return  ( this -> loweredName == x . loweredName and
+                this -> loweredAddr == x . loweredAddr ) or
+                taxID   == x . taxID;
     }
-    bool   isSameCompany ( const string & name, const string & addr ) const
+    bool isSameCompany ( const string & name, const string & addr ) const
     {
-        return this->name == name and this->addr == addr;
+        return this -> loweredName == getLower( name ) and
+               this -> loweredAddr == getLower( addr );
     }
 
-    bool   isSameCompany ( const string & taxID ) const
-    {
-        return this->taxID == taxID;
-    }
+    bool isSameCompany ( const string & taxID ) const { return this->taxID == taxID; }
+
+    void addInvoice ( unsigned int amount ) { invoiceSum += amount; }
+
+    unsigned int getInvoice () const { return invoiceSum; }
+
+    string getName ( void ) const { return this -> name; }
+
+    string getAddr ( void ) const { return this -> addr; }
+
+    static bool comparator (const Company & left ,  const Company & right ) ;
 
 private:
     string name;
+    string loweredName;
     string addr;
+    string loweredAddr;
     string taxID;
+    unsigned int invoiceSum;
 };
 
 string Company::toLower ( string & str )
