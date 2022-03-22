@@ -17,8 +17,15 @@ using namespace std;
 
 class Company
 {
-public:
-    Company( const string & name, const string & addr, const string & taxID )
+  private:
+      string        name;
+      string        loweredName;
+      string        addr;
+      string        loweredAddr;
+      string        taxID;
+      unsigned int  invoiceSum;
+  public:
+    Company ( const string & name, const string & addr, const string & taxID )
         {
             this -> name = name;
             this -> loweredName = getLower( name );
@@ -27,43 +34,58 @@ public:
             this -> taxID = taxID;
             this -> invoiceSum = 0;
         };
-    
-    ~Company ( void ) {};
 
-    static string getLower ( const string & str );
-
-    bool isSameCompany ( const Company & x ) const
-    {
-        return  ( this -> loweredName == x . loweredName and
-                this -> loweredAddr == x . loweredAddr ) or
-                taxID   == x . taxID;
-    }
-    bool isSameCompany ( const string & name, const string & addr ) const
-    {
-        return this -> loweredName == getLower( name ) and
-               this -> loweredAddr == getLower( addr );
-    }
-
-    bool isSameCompany ( const string & taxID ) const { return this->taxID == taxID; }
-
-    void addInvoice ( unsigned int amount ) { invoiceSum += amount; }
-
-    unsigned int getInvoice () const { return invoiceSum; }
-
-    string getName ( void ) const { return this -> name; }
-
-    string getAddr ( void ) const { return this -> addr; }
-
-    static bool comparator (const Company & left ,  const Company & right ) ;
-
-private:
-    string name;
-    string loweredName;
-    string addr;
-    string loweredAddr;
-    string taxID;
-    unsigned int invoiceSum;
+    ~ Company                                   ( void ) {};
+    unsigned int    getInvoice                  ( void ) const;
+    string          getName                     ( void ) const;
+    string          getAddr                     ( void ) const;
+    static string   getLower                    ( const string      & str );
+    bool            isSameCompany               ( const Company     & x ) const;
+    bool            isSameCompany               ( const string      & name,
+                                                  const string      & addr ) const;
+    bool            isSameCompany               ( const string      & taxID ) const;
+    void            addInvoice                  ( unsigned int      amount );
+    static bool     comparator                  ( const Company     & left ,
+                                                  const Company     & right );
 };
+
+string Company::getAddr ( void ) const
+{
+    return this -> addr;
+}
+
+string Company::getName ( void ) const
+{
+    return this -> name;
+}
+
+unsigned int Company::getInvoice () const
+{
+    return invoiceSum;
+}
+
+void Company::addInvoice ( unsigned int amount )
+{
+    invoiceSum += amount;
+}
+
+bool Company::isSameCompany ( const string & taxID ) const
+{
+    return this->taxID == taxID;
+}
+
+bool Company::isSameCompany ( const Company & x ) const
+{
+    return  ( this -> loweredName == x . loweredName and
+              this -> loweredAddr == x . loweredAddr ) or
+            taxID   == x . taxID;
+}
+
+bool Company::isSameCompany ( const string & name, const string & addr ) const
+{
+    return this -> loweredName == getLower( name ) and
+           this -> loweredAddr == getLower( addr );
+}
 
 bool Company::comparator ( const Company & left, const Company & right  )
 {
@@ -79,7 +101,6 @@ bool Company::comparator ( const Company & left, const Company & right  )
         return true;
 
     return false;
-
 }
 
 string Company::getLower ( const string & str )
@@ -91,49 +112,47 @@ string Company::getLower ( const string & str )
     return tmp;
 }
 
-
 class CVATRegister
 {
-  public:
-                  CVATRegister   ( void )
-                  {
-                      invoiceCount = 0;
-                  };
-                  ~CVATRegister  ( void ) {};
-    bool          newCompany     ( const string    & name,
-                                   const string    & addr,
-                                   const string    & taxID );
-    bool          cancelCompany  ( const string    & name,
-                                   const string    & addr );
-    bool          cancelCompany  ( const string    & taxID );
-    bool          invoice        ( const string    & taxID,
-                                   unsigned int      amount );
-    bool          invoice        ( const string    & name,
-                                   const string    & addr,
-                                   unsigned int      amount );
-    bool          audit          ( const string    & name,
-                                   const string    & addr,
-                                   unsigned int    & sumIncome ) const;
-    bool          audit          ( const string    & taxID,
-                                   unsigned int    & sumIncome ) const;
-    bool          firstCompany   ( string          & name,
-                                   string          & addr ) const;
-    bool          nextCompany    ( string          & name,
-                                   string          & addr ) const;
-    unsigned int  medianInvoice  ( void ) const;
-    bool companyExists(const Company & company) const;
-    bool companyExists(const string & name, const string & address ) const;
-
   private:
-    vector <Company> db;
-    unsigned int invoiceCount;
-    vector <unsigned int> invoices;
+    vector <Company>       db;
+    vector <unsigned int>  invoices;
+    unsigned int           invoiceCount;
+
+  public:
+                  CVATRegister                  ( void ) { invoiceCount = 0; };
+                  ~CVATRegister                 ( void ) {};
+    bool          newCompany                    ( const string    & name,
+                                                  const string    & addr,
+                                                  const string    & taxID );
+    bool          cancelCompany                 ( const string    & name,
+                                                  const string    & addr );
+    bool          cancelCompany                 ( const string    & taxID );
+    bool          invoice                       ( const string    & taxID,
+                                                  unsigned int      amount );
+    bool          invoice                       ( const string    & name,
+                                                  const string    & addr,
+                                                  unsigned int      amount );
+    bool          audit                         ( const string    & name,
+                                                  const string    & addr,
+                                                  unsigned int    & sumIncome ) const;
+    bool          audit                         ( const string    & taxID,
+                                                  unsigned int    & sumIncome ) const;
+    bool          firstCompany                  ( string          & name,
+                                                  string          & addr ) const;
+    bool          nextCompany                   ( string          & name,
+                                                  string          & addr ) const;
+    unsigned int  medianInvoice                 ( void ) const;
+    bool          companyExists                          ( const Company   & company) const;
+    vector<Company>::const_iterator get ( const string    & name,
+                                                  const string    & address ) const;
 };
+//-----------------------------------------------------
 bool CVATRegister::companyExists( const Company & company ) const
 {
     if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
         {
-            return x . isSameCompany(  company );
+            return x . isSameCompany( company );
         } ); pos != db . end ())
         return true;
     return false;
@@ -143,7 +162,7 @@ bool CVATRegister::companyExists( const string & name, const string & address ) 
 {
     if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
         {
-            return x . isSameCompany(  name , address );
+            return x . isSameCompany( name , addr );
         } ); pos != db . end ())
         return true;
     return false;
@@ -183,7 +202,7 @@ bool CVATRegister::cancelCompany ( const string & taxID )
 {
     if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
         {
-            return x . isSameCompany(  taxID );
+            return x . isSameCompany( name , addr );
         } ); pos != db . end ())
     {
         *pos = db . back ();
@@ -198,7 +217,7 @@ bool CVATRegister::invoice( const string & taxID, unsigned int amount )
 {
     if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
         {
-            return x . isSameCompany(  taxID );
+            return x . isSameCompany( name , addr );
         } ); pos != db . end ())
     {
         invoiceCount += 1;
@@ -215,7 +234,7 @@ bool CVATRegister::invoice ( const string & name, const string & addr, unsigned 
 
     if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
         {
-            return x . isSameCompany(  name , addr );
+            return x . isSameCompany( taxID );
         } ); pos != db . end ())
     {
         invoiceCount += 1;
