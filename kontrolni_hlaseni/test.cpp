@@ -261,7 +261,57 @@ bool CVATRegister::invoice ( const string & name, const string & addr, unsigned 
 //-----------------------------------------------------
 unsigned int CVATRegister::medianInvoice ( void ) const
 {
-        return invoiceCount == 0 ? 0 : invoices.at(invoiceCount/2);
+    return invoiceCount == 0 ? 0 : invoices.at(invoiceCount / 2);
+}
+//-----------------------------------------------------
+bool CVATRegister::audit ( const string & name, const string & addr, unsigned int & sumIncome ) const
+{
+    Company temp ( name, addr );
+    auto posPerNameAddr = findCompanyPerNameAddr ( temp );
+    if (  posPerNameAddr != dbPerNameAddr . end () && ( * posPerNameAddr ).isSameCompany( name, addr ))
+    {
+        sumIncome = ( (* posPerNameAddr ) ) . getInvoice();
+        return true;
+    }
+    return false;
+}
+//-----------------------------------------------------
+bool CVATRegister::audit ( const string & taxID, unsigned int & sumIncome ) const
+{
+    Company temp ( taxID );
+    auto posPerTaxId = findCompanyPerTaxId( temp );
+    if (  posPerTaxId != dbPerTaxId . end () && ( * posPerTaxId ).isSameCompany( taxID ))
+    {
+        sumIncome = ( (* posPerTaxId ) ) . getInvoice();
+        return true;
+    }
+    return false;
+}
+//-----------------------------------------------------
+bool CVATRegister::firstCompany ( string & name, string & addr ) const
+{
+    if ( dbPerNameAddr . empty() )
+        return false;
+    name = this -> dbPerNameAddr .at( 0 ) . getName();
+    addr = this -> dbPerNameAddr .at( 0 ) . getAddr();
+    return true;
+}
+//-----------------------------------------------------
+bool CVATRegister::nextCompany ( string & name, string & addr ) const
+{
+    if ( dbPerNameAddr . empty() )
+        return false;
+    Company temp ( name, addr );
+    auto pos = findCompanyPerNameAddr( temp );
+    if (  pos != dbPerNameAddr . end () && ( * pos ).isSameCompany( name, addr ))
+    {
+        if ( ++ pos == dbPerNameAddr . end())
+            return false;
+        name =  ( * pos ) . getName();
+        addr =  ( * pos ) . getAddr();
+        return true;
+    }
+    return false;
 }
 
 #ifndef __PROGTEST__
