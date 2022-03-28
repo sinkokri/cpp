@@ -76,20 +76,16 @@ bool Company::isSameCompany ( const string & name, const string & addr ) const
 //-----------------------------------------------------
 bool Company::companyComparator ( const Company & left, const Company & right  )
 {
-    int i = right . loweredName .compare( left . loweredName );
-    if  ( i == 0 )
-    {
-        int j = right . loweredAddr .compare( left . loweredAddr );
-        if ( j == 0 or j > 0 )
-            return true;
-        else return false;
-    }
-    if ( i > 0 )
-        return true;
-
-    return false;
+    if (left.loweredName != right.loweredName)
+        return left.loweredName < right.loweredName;
+    return left.loweredAddr < right.loweredAddr;
 }
-
+//-----------------------------------------------------
+bool Company::taxComparator ( const Company & left, const Company & right  )
+{
+    return left. taxID < right . taxID;
+}
+//-----------------------------------------------------
 string Company::getLower ( const string & str )
 {
     string tmp = str;
