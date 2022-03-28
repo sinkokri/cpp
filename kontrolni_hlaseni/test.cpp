@@ -94,41 +94,43 @@ string Company::getLower ( const string & str )
     });
     return tmp;
 }
-
+//-----------------------------------------------------
 class CVATRegister
 {
-  private:
-    vector <Company>       db;
+private:
+    vector <Company>       dbPerNameAddr;
+    vector <Company>       dbPerTaxId;
     vector <unsigned int>  invoices;
-    unsigned int           invoiceCount;
+    unsigned int           invoiceCount = 0;
 
-  public:
-                  CVATRegister                  ( void ) { invoiceCount = 0; };
-                  ~CVATRegister                 ( void ) {};
-    bool          newCompany                    ( const string    & name,
-                                                  const string    & addr,
-                                                  const string    & taxID );
-    bool          cancelCompany                 ( const string    & name,
-                                                  const string    & addr );
-    bool          cancelCompany                 ( const string    & taxID );
-    bool          invoice                       ( const string    & taxID,
-                                                  unsigned int      amount );
-    bool          invoice                       ( const string    & name,
-                                                  const string    & addr,
-                                                  unsigned int      amount );
-    bool          audit                         ( const string    & name,
-                                                  const string    & addr,
-                                                  unsigned int    & sumIncome ) const;
-    bool          audit                         ( const string    & taxID,
-                                                  unsigned int    & sumIncome ) const;
-    bool          firstCompany                  ( string          & name,
-                                                  string          & addr ) const;
-    bool          nextCompany                   ( string          & name,
-                                                  string          & addr ) const;
-    unsigned int  medianInvoice                 ( void ) const;
-    bool          companyExists                          ( const Company   & company) const;
-    vector<Company>::const_iterator get ( const string    & name,
-                                                  const string    & address ) const;
+public:
+    CVATRegister                                          ( ) {}
+    ~CVATRegister                                         ( void ) {};
+    bool          newCompany                              ( const string    & name,
+                                                            const string    & addr,
+                                                            const string    & taxID );
+    bool          cancelCompany                           ( const string    & name,
+                                                            const string    & addr );
+    bool          cancelCompany                           ( const string    & taxID );
+    bool          invoice                                 ( const string    & taxID,
+                                                            unsigned int      amount );
+    bool          invoice                                 ( const string    & name,
+                                                            const string    & addr,
+                                                            unsigned int      amount );
+    bool          audit                                   ( const string    & name,
+                                                            const string    & addr,
+                                                            unsigned int    & sumIncome ) const;
+    bool          audit                                   ( const string    & taxID,
+                                                            unsigned int    & sumIncome ) const;
+    bool          firstCompany                            ( string          & name,
+                                                            string          & addr ) const;
+    bool          nextCompany                             ( string          & name,
+                                                            string          & addr ) const;
+    unsigned int  medianInvoice                           ( void ) const;
+    vector<Company>::iterator findCompanyPerNameAddr      ( const Company    & company );
+    vector<Company>::iterator findCompanyPerTaxId         ( const Company    & company );
+    vector<Company>::const_iterator findCompanyPerNameAddr( const Company & company ) const;
+    vector<Company>::const_iterator findCompanyPerTaxId   ( const Company & company ) const;
 };
 //-----------------------------------------------------
 bool CVATRegister::companyExists( const Company & company ) const
