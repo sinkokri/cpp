@@ -179,76 +179,86 @@ bool CVATRegister::newCompany ( const string & name,
     if ( ( posNameAddr == dbPerNameAddr . end () || !( *posNameAddr ).isSameCompany( name, addr ) )
      && ( posTaxId == dbPerNameAddr . end () || !( *posNameAddr ).isSameCompany( taxID )))
     {
-        db.push_back(company);
+        dbPerNameAddr.insert(posNameAddr,
+                            company);
+        dbPerTaxId.insert(posTaxId,
+                          company);
         return true;
     }
     return false;
 }
-
+//-----------------------------------------------------
 bool CVATRegister::cancelCompany ( const string & name, const string & addr )
 {
-    string loweredName = Company::toLower(const_cast<string &>(name));
-    string loweredAddr = Company::toLower(const_cast<string &>(addr));
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany(  name , addr );
-        } ); pos != db . end ())
+    Company tempPerNameAddr ( name, addr );
+    auto posPerNameAddr = findCompanyPerNameAddr ( tempPerNameAddr  );
+    if ( posPerNameAddr != dbPerNameAddr . end () && ( * posPerNameAddr ).isSameCompany( name, addr )  )
     {
-        *pos = db . back ();
-        db . pop_back ();
-
+        Company tempPerTaxId ( posPerNameAddr->getTaxId() );
+        auto posPerTaxId = findCompanyPerTaxId ( tempPerTaxId  );
+        dbPerNameAddr.erase(posPerNameAddr);
+        dbPerTaxId.erase(posPerTaxId);
         return true;
     }
     return false;
 }
-
+//-----------------------------------------------------
 bool CVATRegister::cancelCompany ( const string & taxID )
 {
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany( name , addr );
-        } ); pos != db . end ())
+    Company temp ( taxID );
+    auto posPerTaxId = findCompanyPerTaxId( temp );
+    if (  posPerTaxId != dbPerTaxId . end () && ( * posPerTaxId ).isSameCompany( taxID ) )
     {
-        *pos = db . back ();
-        db . pop_back ();
+        Company tempPerNameAddr ( posPerTaxId->getLoweredName(), posPerTaxId->getLoweredAddr() );
+        auto posPerNameAddr = findCompanyPerNameAddr ( tempPerNameAddr );
+        dbPerNameAddr.erase(posPerNameAddr);
+        dbPerTaxId.erase(posPerTaxId);
 
         return true;
     }
     return false;
 }
-
+//-----------------------------------------------------
 bool CVATRegister::invoice( const string & taxID, unsigned int amount )
 {
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany( name , addr );
-        } ); pos != db . end ())
+    Company temp ( taxID );
+    auto posPerTaxId = findCompanyPerTaxId ( temp );
+    if (  posPerTaxId != dbPerTaxId . end () && ( * posPerTaxId ).isSameCompany( taxID ) )
     {
+        Company tempPerNameAddr ( posPerTaxId->getLoweredName(), posPerTaxId->getLoweredAddr() );
+        auto posPerNameAddr = findCompanyPerNameAddr ( tempPerNameAddr );
+        ( * posPerNameAddr ) . addInvoice( amount );
+        ( * posPerTaxId ) . addInvoice( amount );
         invoiceCount += 1;
-        invoices.insert(lower_bound(invoices.begin(), invoices.end(), amount), amount);
+        invoices.insert( lower_bound( invoices.begin(),
+                                              invoices.end(),
+                                              amount ),
+                         amount );
         return true;
     }
     return false;
 }
-
+//-----------------------------------------------------
 bool CVATRegister::invoice ( const string & name, const string & addr, unsigned int amount )
 {
-    string loweredName = Company::toLower(const_cast<string &>(name));
-    string loweredAddr = Company::toLower(const_cast<string &>(addr));
-
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany( taxID );
-        } ); pos != db . end ())
+    Company temp ( name, addr );
+    auto posPerNameAddr = findCompanyPerNameAddr ( temp );
+    if (  posPerNameAddr != dbPerNameAddr . end () && ( * posPerNameAddr ).isSameCompany( name, addr ) )
     {
+        Company tempPerTaxId ( posPerNameAddr->getTaxId() );
+        auto posPerTaxId = findCompanyPerTaxId( tempPerTaxId );
+        ( * posPerTaxId ) . addInvoice( amount );
+        ( * posPerNameAddr ) . addInvoice( amount );
         invoiceCount += 1;
-        invoices.insert(lower_bound(invoices.begin(), invoices.end(), amount), amount);
+        invoices.insert(lower_bound(invoices.begin(),
+                                    invoices.end(),
+                                    amount),
+                        amount);
         return true;
     }
     return false;
-
 }
-
+//-----------------------------------------------------
 unsigned int CVATRegister::medianInvoice ( void ) const
 {
         return invoiceCount == 0 ? 0 : invoices.at(invoiceCount/2);
