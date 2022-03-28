@@ -150,13 +150,34 @@ vector<Company>::const_iterator CVATRegister::findCompanyPerNameAddr( const Comp
             company,
             Company::companyComparator);
 }
-
-bool CVATRegister::newCompany ( const string    & name,
-                               const string    & addr,
-                               const string    & taxID )
+//-----------------------------------------------------
+vector<Company>::iterator CVATRegister::findCompanyPerTaxId( const Company & company )
 {
-    Company company (name, addr, taxID);
-    if (!companyExists(company))
+    return std::lower_bound(
+            dbPerTaxId.begin(),
+            dbPerTaxId.end(),
+            company,
+            Company::taxComparator);
+}
+//-----------------------------------------------------
+vector<Company>::const_iterator CVATRegister::findCompanyPerTaxId( const Company & company ) const
+{
+    return std::lower_bound(
+            dbPerTaxId.begin(),
+            dbPerTaxId.end(),
+            company,
+            Company::taxComparator);
+}
+//-----------------------------------------------------
+bool CVATRegister::newCompany ( const string & name,
+                                const string & addr,
+                                const string & taxID )
+{
+    Company company ( name, addr, taxID );
+    auto posNameAddr = findCompanyPerNameAddr ( company );
+    auto posTaxId = findCompanyPerTaxId ( company );
+    if ( ( posNameAddr == dbPerNameAddr . end () || !( *posNameAddr ).isSameCompany( name, addr ) )
+     && ( posTaxId == dbPerNameAddr . end () || !( *posNameAddr ).isSameCompany( taxID )))
     {
         db.push_back(company);
         return true;
