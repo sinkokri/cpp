@@ -133,24 +133,22 @@ public:
     vector<Company>::const_iterator findCompanyPerTaxId   ( const Company & company ) const;
 };
 //-----------------------------------------------------
-bool CVATRegister::companyExists( const Company & company ) const
+vector<Company>::iterator CVATRegister::findCompanyPerNameAddr( const Company & company )
 {
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany( company );
-        } ); pos != db . end ())
-        return true;
-    return false;
+    return   std::lower_bound(
+            dbPerNameAddr.begin(),
+            dbPerNameAddr.end(),
+            company,
+            Company::companyComparator);
 }
-
-bool CVATRegister::companyExists( const string & name, const string & address ) const
+//-----------------------------------------------------
+vector<Company>::const_iterator CVATRegister::findCompanyPerNameAddr( const Company & company ) const
 {
-    if ( auto pos = find_if(db.begin(), db.end(), [&] ( const Company & x )
-        {
-            return x . isSameCompany( name , addr );
-        } ); pos != db . end ())
-        return true;
-    return false;
+    return std::lower_bound(
+            dbPerNameAddr.begin(),
+            dbPerNameAddr.end(),
+            company,
+            Company::companyComparator);
 }
 
 bool CVATRegister::newCompany ( const string    & name,
