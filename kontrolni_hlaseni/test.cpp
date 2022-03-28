@@ -17,77 +17,64 @@ using namespace std;
 
 class Company
 {
-  private:
-      string        name;
-      string        loweredName;
-      string        addr;
-      string        loweredAddr;
-      string        taxID;
-      unsigned int  invoiceSum;
-  public:
-    Company ( const string & name, const string & addr, const string & taxID )
-        {
-            this -> name = name;
-            this -> loweredName = getLower( name );
-            this -> addr = addr;
-            this -> loweredAddr = getLower( addr );
-            this -> taxID = taxID;
-            this -> invoiceSum = 0;
-        };
+private:
+    string        name = "";
+    string        loweredName = "";
+    string        addr = "";
+    string        loweredAddr = "";
+    string        taxID = "";
+    unsigned int  invoiceSum = 0;
+public:
+    Company ( const string & name, const string & addr, const string & taxID ) :
+    name ( name ),
+    addr ( addr ),
+    taxID( taxID )
+    {
+        this -> loweredName = getLower( name );
+        this -> loweredAddr = getLower( addr );
+    };
+    Company ( const string & name, const string & addr ) :
+    name ( name ),
+    addr ( addr )
+    {
+        this -> loweredName = getLower( name );
+        this -> loweredAddr = getLower( addr );
+    }
+    Company ( const string & taxID ) :
+    taxID( taxID )
+    {}
 
     ~ Company                                   ( void ) {};
-    unsigned int    getInvoice                  ( void ) const;
-    string          getName                     ( void ) const;
-    string          getAddr                     ( void ) const;
+    unsigned int    getInvoice                  ( void ) const { return this -> invoiceSum; };
+    string          getName                     ( void ) const { return this -> name; };
+    string          getAddr                     ( void ) const { return this -> addr; };
+    string          getTaxId                    ( void ) const { return this -> taxID; };
+    string          getLoweredName              ( void ) const { return this -> loweredName; };
+    string          getLoweredAddr              ( void ) const { return this -> loweredAddr; };
+    void            addInvoice                  ( unsigned int      amount ) { this -> invoiceSum += amount; };
     static string   getLower                    ( const string      & str );
-    bool            isSameCompany               ( const Company     & x ) const;
     bool            isSameCompany               ( const string      & name,
                                                   const string      & addr ) const;
     bool            isSameCompany               ( const string      & taxID ) const;
-    void            addInvoice                  ( unsigned int      amount );
-    static bool     comparator                  ( const Company     & left ,
+
+    static bool     companyComparator           ( const Company     & left ,
                                                   const Company     & right );
+    static bool     taxComparator               ( const Company & left,
+                                                  const Company & right );
 };
-
-string Company::getAddr ( void ) const
-{
-    return this -> addr;
-}
-
-string Company::getName ( void ) const
-{
-    return this -> name;
-}
-
-unsigned int Company::getInvoice () const
-{
-    return invoiceSum;
-}
-
-void Company::addInvoice ( unsigned int amount )
-{
-    invoiceSum += amount;
-}
-
+//-----------------------------------------------------
 bool Company::isSameCompany ( const string & taxID ) const
 {
     return this->taxID == taxID;
 }
-
-bool Company::isSameCompany ( const Company & x ) const
-{
-    return  ( this -> loweredName == x . loweredName and
-              this -> loweredAddr == x . loweredAddr ) or
-            taxID   == x . taxID;
-}
-
+//-----------------------------------------------------
 bool Company::isSameCompany ( const string & name, const string & addr ) const
 {
     return this -> loweredName == getLower( name ) and
            this -> loweredAddr == getLower( addr );
 }
-
-bool Company::comparator ( const Company & left, const Company & right  )
+//-----------------------------------------------------
+bool Company::companyComparator ( const Company & left, const Company & right  )
 {
     int i = right . loweredName .compare( left . loweredName );
     if  ( i == 0 )
