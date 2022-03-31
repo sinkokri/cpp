@@ -59,16 +59,22 @@ public:
 //=================================================================================================
 CDate::CDate (int year, int month, int day)
 {
-    checkLeapYear();
-    this -> maxDays = this -> monthLengths.at( month );
-    if (year < 2000 ||
-            year > 2030 ||
-            month < 1 ||
-            month > 12 ||
-            day < 1 ||
-            day > this -> maxDays)
+    if ( year  < 2000 ||
+         year  > 2030 )
         throw InvalidDateException();
+
     this -> year = year;
+
+    checkLeapYear();
+
+    this -> maxDays = this -> monthLengths.at( month );
+
+    if ( month < 1    ||
+         month > 12   ||
+         day   < 1    ||
+         day   > this -> maxDays )
+        throw InvalidDateException();
+
     this -> month = month;
     this -> day = day;
 }
