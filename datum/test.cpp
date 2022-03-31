@@ -120,8 +120,8 @@ void CDate::normalize ( )
     }
     while( day < 1 )
     {
-        this -> day += monthLengths.at(this -> month);
         previousMonth();
+        this -> day += monthLengths.at(this -> month);
     }
 }
 //=================================================================================================
