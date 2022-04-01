@@ -48,12 +48,14 @@ public:
     void previousMonth();
     void nextYear();
     void previousYear();
+    void toDays ( );
 
     int getYear() { return year; }
     int getMonth() { return month ; }
     int getDay() { return day; }
     CDate operator + ( int days );
     CDate operator - ( int days );
+    int operator - ( const CDate & t );
     friend ostream & operator << ( ostream & os, const CDate & x );
 };
 //=================================================================================================
@@ -164,11 +166,38 @@ void CDate::previousYear()
     checkLeapYear();
 }
 //=================================================================================================
-ostream & operator << ( ostream & os, const CDate & t)
+int CDate::operator - ( const CDate & d )
 {
-    return os << t.year << "-"
-              << setfill('0') << setw(2)  << t.month << "-"
-              << setfill('0') << setw(2)  << t.day;
+    CDate second = d;
+    second . toDays();
+    CDate first = ( * this );
+    first . toDays();
+    int total = first . totalDays - second . totalDays;
+    return total;
+}
+//=================================================================================================
+void CDate::toDays ( )
+{
+    int count = 0;
+    count += this -> day;
+    while ( this -> year > 2000 )
+    {
+        previousMonth();
+        count += monthLengths.at(this -> month);
+    }
+    while ( this -> month > 1)
+    {
+        previousMonth();
+        count += monthLengths.at(this -> month);
+    }
+    this -> totalDays = count;
+}
+//=================================================================================================
+ostream & operator << ( ostream & os, const CDate & d)
+{
+    return os << d.year << "-"
+              << setfill('0') << setw(2)  << d.month << "-"
+              << setfill('0') << setw(2)  << d.day;
 }
 //=================================================================================================
 #ifndef __PROGTEST__
@@ -192,12 +221,12 @@ int main ( void )
   a = a + 1500;
   oss . str ("");
   oss << a;
-//  assert ( oss . str () == "2004-02-10" );
+  assert ( oss . str () == "2004-02-10" );
   b = b - 2000;
   oss . str ("");
   oss << b;
   assert ( oss . str () == "2004-08-13" );
-//  assert ( b - a == 185 );
+  assert ( b - a == 185 );
 //  assert ( ( b == a ) == false );
 //  assert ( ( b != a ) == true );
 //  assert ( ( b <= a ) == false );
