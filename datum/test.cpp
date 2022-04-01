@@ -53,9 +53,24 @@ public:
     int getYear() { return year; }
     int getMonth() { return month ; }
     int getDay() { return day; }
+
     CDate operator + ( int days );
     CDate operator - ( int days );
-    int operator - ( const CDate & t );
+    int operator - ( const CDate & d );
+
+    CDate operator ++ ( void );
+    CDate operator -- ( void );
+
+    CDate operator ++ ( int );
+    CDate operator -- ( int );
+
+    bool operator < ( const CDate & d ) const;
+    bool operator <= ( const CDate & d ) const;
+    bool operator > ( const CDate & d ) const;
+    bool operator >= ( const CDate & d ) const;
+    bool operator != ( const CDate & d ) const;
+    bool operator == ( const CDate & d ) const;
+
     friend ostream & operator << ( ostream & os, const CDate & x );
 };
 //=================================================================================================
@@ -168,10 +183,10 @@ void CDate::previousYear()
 //=================================================================================================
 int CDate::operator - ( const CDate & d )
 {
-    CDate second = d;
-    second . toDays();
     CDate first = ( * this );
     first . toDays();
+    CDate second = d;
+    second . toDays();
     int total = first . totalDays - second . totalDays;
     return total;
 }
@@ -193,12 +208,106 @@ void CDate::toDays ( )
     this -> totalDays = count;
 }
 //=================================================================================================
+bool CDate::operator < ( const CDate & d ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = d;
+    second . toDays();
+
+    return first . totalDays < second . totalDays;
+
+}
+//=================================================================================================
+bool CDate::operator <= ( const CDate & d ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = d;
+    second . toDays();
+
+    return first . totalDays <= second . totalDays;
+}
+//=================================================================================================
+bool CDate::operator > ( const CDate & d ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = d;
+    second . toDays();
+
+    return first . totalDays > second . totalDays;
+}
+//=================================================================================================
+bool CDate::operator >= ( const CDate & d ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = d;
+    second . toDays();
+
+    return first . totalDays >= second . totalDays;
+}
+//=================================================================================================
+bool CDate::operator != ( const CDate & d ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = d;
+    second . toDays();
+
+    return first . totalDays != second . totalDays;
+}
+//=================================================================================================
+bool CDate::operator == ( const CDate & d ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = d;
+    second . toDays();
+
+    return first . totalDays == second . totalDays;
+}
+//=================================================================================================
+CDate CDate::operator ++ ( void )
+{
+    this -> day += 1;
+    normalize();
+    return ( * this );
+}
+//=================================================================================================
+CDate CDate::operator -- ( void )
+{
+    this -> day -= 1;
+    normalize();
+    return ( * this );
+}
+//=================================================================================================
+CDate CDate::operator ++ ( int )
+{
+    CDate aux ( * this );
+    ++ ( * this );
+    normalize();
+    return aux;
+
+}
+//=================================================================================================
+CDate CDate::operator -- ( int )
+{
+    CDate aux ( * this );
+    -- ( * this );
+    normalize();
+    return aux;
+
+}
+//=================================================================================================
 ostream & operator << ( ostream & os, const CDate & d)
 {
     return os << d.year << "-"
               << setfill('0') << setw(2)  << d.month << "-"
               << setfill('0') << setw(2)  << d.day;
 }
+
 //=================================================================================================
 #ifndef __PROGTEST__
 int main ( void )
