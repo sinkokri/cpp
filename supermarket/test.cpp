@@ -194,20 +194,38 @@ CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDa
 //    auto i = warewhose.emplace( product, count) ;
     return ( * this );
 }
-
 //===========================================================================================
 bool CSupermarket::comparator (const pair <string,int>& first, const pair <string,int>& second)
 {
     return  first .second > second. second ;
 }
 //===========================================================================================
+list < pair <string,int> > CSupermarket::expired ( CDate date )
+{
+    list <pair <string,int>> bucket;
+    for ( auto item: warewhose )
+    {
+        if ( item . first . expiryDate < date )
+        {
+            pair <string, int> pair (item . first .name, item . second);
 
-
+            if ( bucket .back() .first  == item . first. name)
+            {
+                int amount = bucket .back() . second + item.second;
+                bucket . pop_back();
+                bucket . emplace_back(item . first .name, amount );
+            }
+             else {
+                bucket . push_back( pair );
+             }
+        }
+    }
+    if ( ! bucket . empty() )
+        bucket . sort( comparator );
+    return bucket;
+}
 //===========================================================================================
-
-
-
-
+//===========================================================================================
 #ifndef __PROGTEST__
 int main ( void )
 {
