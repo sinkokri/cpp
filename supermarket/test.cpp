@@ -180,21 +180,18 @@ private:
   public:
     CSupermarket () {};
 
-    CSupermarket store   ( const string name, const CDate expiryDate, int count );
+    CSupermarket & store   ( const string & name, const CDate & expiryDate, int count );
     void sell    (  list<pair<string,int> > shoppingList );
     list<pair<string,int> > expired ( CDate date );
 
 
 };
 //===========================================================================================
-CSupermarket CSupermarket::store ( const string name, const CDate expiryDate, int count )
+CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDate, int count )
 {
-    const Product product ( name, expiryDate );
-
-        warewhose [ product ] = count ;
-//    auto it = warewhose . find( product );
-//    const auto a = warewhose . insert( it, pair<Product, int> ( product, count ) );
-
+    Product product ( name, expiryDate );
+    warewhose [  Product ( name, expiryDate ) ] = count ;
+//    auto i = warewhose.emplace( product, count) ;
     return ( * this );
 }
 
