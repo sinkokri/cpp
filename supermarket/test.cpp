@@ -40,6 +40,7 @@ private:
   public:
     CDate ( int year, int month, int day );
     bool operator > ( const CDate & other ) const;
+    bool operator < ( const CDate & other ) const;
     void toDays ( void );
     void previousMonth( void );
     void previousYear ( void );
@@ -70,6 +71,16 @@ CDate::CDate (int year, int month, int day)
     this -> initMonth = month;
     this -> day = day;
     this -> initDay = day;
+}
+//===========================================================================================
+bool CDate::operator < ( const CDate & other ) const
+{
+    CDate first = ( * this );
+    first . toDays();
+    CDate second = other;
+    second . toDays();
+
+    return first . totalDays < second . totalDays;
 }
 //===========================================================================================
 bool CDate::operator > ( const CDate & other ) const
