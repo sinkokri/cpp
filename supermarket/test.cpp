@@ -183,7 +183,7 @@ private:
     CSupermarket & store   ( const string & name, const CDate & expiryDate, int count );
     void sell    (  list<pair<string,int> > shoppingList );
     list<pair<string,int> > expired ( CDate date );
-
+    static bool comparator (const pair <string,int>& first, const pair <string,int>& second);
 
 };
 //===========================================================================================
@@ -196,7 +196,10 @@ CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDa
 }
 
 //===========================================================================================
-
+bool CSupermarket::comparator (const pair <string,int>& first, const pair <string,int>& second)
+{
+    return  first .second > second. second ;
+}
 //===========================================================================================
 
 
