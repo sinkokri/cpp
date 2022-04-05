@@ -175,7 +175,8 @@ namespace std
 class CSupermarket
 {
 private:
-    map <Product, int> warewhose;
+    map <Product, int> warehouse;
+    set <string> productNames;
             
   public:
     CSupermarket () {};
@@ -190,8 +191,12 @@ private:
 CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDate, int count )
 {
     Product product ( name, expiryDate );
-    warewhose [  Product ( name, expiryDate ) ] = count ;
-//    auto i = warewhose.emplace( product, count) ;
+    if ( warehouse . count( product ))
+        warehouse [  product ] += count ;
+    else
+        warehouse [  product ] = count ;
+    productNames .insert( name );
+//    auto i = warehouse.emplace( product, count) ;
     return ( * this );
 }
 //===========================================================================================
