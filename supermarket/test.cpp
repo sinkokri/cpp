@@ -38,22 +38,18 @@ private:
                                  31, 30, 31, 30, 31 };
 
   public:
-    CDate ( int year, int month, int day );
-    bool operator > ( const CDate & other ) const;
-    bool operator < ( const CDate & other ) const;
-    void toDays ( void );
-    void previousMonth( void );
-    void previousYear ( void );
-    void resetMaxDays ( void );
-    void checkLeapYear ( void );
+    CDate               ( int year, int month, int day );
+    bool operator >     ( const CDate & other ) const;
+    bool operator <     ( const CDate & other ) const;
+    void toDays         ( void );
+    void previousMonth  ( void );
+    void previousYear   ( void );
+    void resetMaxDays   ( void );
+    void checkLeapYear  ( void );
 };
 //===========================================================================================
 CDate::CDate (int year, int month, int day)
 {
-    if ( year  < 2000 ||
-         year  > 2030 )
-        throw exception();
-
     this -> year = year;
     this -> initYear = year;
 
@@ -156,10 +152,14 @@ class Product
 public:
     string name;
     CDate expiryDate;
-    Product ( string name, CDate expiryDate) : name ( name ), expiryDate ( expiryDate ) {}
+    Product                 ( string name, CDate expiryDate)
+    : name ( name ), expiryDate ( expiryDate ) {}
+
+    bool operator ==        ( const Product & other ) const;
+    static bool comparator  ( const Product& lhs, const Product& rhs );
 };
 //===========================================================================================
-namespace std
+bool Product::operator == ( const Product & other ) const
 {
     template<> struct less <Product>
     {
