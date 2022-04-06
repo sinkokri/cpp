@@ -161,16 +161,23 @@ public:
 //===========================================================================================
 bool Product::operator == ( const Product & other ) const
 {
-    template<> struct less <Product>
-    {
-        bool operator() (const Product& lhs, const Product& rhs) const
-        {
-            if ( lhs . name != rhs . name )
-                return lhs . name < rhs . name;
-            return lhs . expiryDate > rhs . expiryDate;
-        }
-    };
+    return ( * this ) . name == other . name;
 }
+//===========================================================================================
+bool Product::comparator (const Product & lhs, const Product & rhs)
+{
+    return lhs.name < rhs.name;
+}
+//===========================================================================================
+
+struct productCompare
+{
+    bool operator () (const Product &lhs, const Product &rhs) const {
+        if (lhs.name != rhs.name)
+            return lhs.name < rhs.name;
+        return lhs.expiryDate > rhs.expiryDate;
+    }
+};
 //===========================================================================================
 class CSupermarket
 {
