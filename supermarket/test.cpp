@@ -233,8 +233,50 @@ list < pair <string,int> > CSupermarket::expired ( const CDate date )
     if ( ! bucket . empty() )
         bucket . sort( comparator );
     return bucket;
-}
+}//===========================================================================================
+//bool operator < (const Product & lhs, const Product & rhs)
+//{
+//    return lhs.name < rhs.name;
+//}
 //===========================================================================================
+void CSupermarket::sell ( list<pair<string,int> > & shoppingList )
+{
+    std::list<pair<string,int>>::const_iterator i = shoppingList.begin();
+    while ( i != shoppingList.end() )
+//    for ( auto & i: shoppingList )
+//    for ( auto i = shoppingList.begin(); i!=shoppingList.end(); ++i )
+    {
+        string name = i -> first;
+        int count = i -> second;
+        if ( productsList . count(name ) )   // if product is in the product list -- exact match
+        {
+            auto j = warehouse . lower_bound( Product(i-> first, CDate(2100, 12, 31))  );
+            if ( j != warehouse.end() and j -> first .name == name )
+            {
+                // if the WH item has count equal or less than in the shoppoing list -
+                // remove it from WH and keep in shopping list with corrected count
+                int warehouseItemCount = j -> second;
+                if ( warehouseItemCount <= count )
+                {
+                    count -= warehouseItemCount;
+                    warehouse . erase( j );
+                    productsList . erase(name);
+                    shoppingList . erase (i);
+                    shoppingList . emplace_back(make_pair(name, count));
+                    cout << "removing the item fully " << i->first << " and " << i ->second << endl;
+                }
+                else // just to deduct the count from WH and remove from shopping list
+                {
+                    warehouseItemCount -= count;
+                    cout << "deducting the count " << i->first << " and " << i ->second << endl;
+                    shoppingList . erase( i );
+                }
+            }
+        }
+        else i++;
+
+    }
+}
 //===========================================================================================
 #ifndef __PROGTEST__
 int main ( void )
