@@ -210,10 +210,10 @@ bool CSupermarket::comparator (const pair <string,int>& first, const pair <strin
     return  first .second > second. second ;
 }
 //===========================================================================================
-list < pair <string,int> > CSupermarket::expired ( CDate date )
+list < pair <string,int> > CSupermarket::expired ( const CDate date )
 {
     list <pair <string,int>> bucket;
-    for ( auto item: warewhose )
+    for ( const auto & item: warehouse )
     {
         if ( item . first . expiryDate < date )
         {
