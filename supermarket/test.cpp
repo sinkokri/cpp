@@ -182,28 +182,26 @@ struct productCompare
 class CSupermarket
 {
 private:
-    map <Product, int> warehouse;
-    set <string> productNames;
+    map <Product, int, productCompare> warehouse;
+    set <string> productsList;
             
   public:
     CSupermarket () {};
 
-    CSupermarket & store   ( const string & name, const CDate & expiryDate, int count );
-    void sell    (  list<pair<string,int> > shoppingList );
-    list<pair<string,int> > expired ( CDate date );
-    static bool comparator (const pair <string,int>& first, const pair <string,int>& second);
-
+    CSupermarket &          store           ( const string & name, const CDate & expiryDate, int count );
+    void                    sell            ( list<pair<string,int> > & shoppingList );
+    list<pair<string,int> > expired         ( const CDate date );
+    static bool             comparator      ( const pair <string,int>& first, const pair <string,int>& second );
 };
 //===========================================================================================
 CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDate, int count )
 {
     Product product ( name, expiryDate );
     if ( warehouse . count( product ))
-        warehouse [  product ] += count ;
+        warehouse [ product ] += count ;
     else
-        warehouse [  product ] = count ;
-    productNames .insert( name );
-//    auto i = warehouse.emplace( product, count) ;
+        warehouse [ product ] = count ;
+    productsList .insert(name );
     return ( * this );
 }
 //===========================================================================================
