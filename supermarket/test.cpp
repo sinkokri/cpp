@@ -294,40 +294,42 @@ bool CSupermarket::itemMatch ( string & value  )
 //===========================================================================================
 void CSupermarket::sell ( list<pair<string,int> > & shoppingList )
 {
-    std::list<pair<string,int>>::const_iterator i = shoppingList.begin();
-    while ( i != shoppingList.end() )
-//    for ( auto & i: shoppingList )
+//    std::list<pair<string,int>>::const_iterator iterItem;
+//    while ( i != shoppingList.end() )
+//    auto pos = shoppingList.begin();
 //    for ( auto i = shoppingList.begin(); i!=shoppingList.end(); ++i )
+    for ( auto & itemToBuy: shoppingList )
     {
-        string name = i -> first;
-        int count = i -> second;
-        if ( productsList . count(name ) )   // if product is in the product list -- exact match
+        string name = itemToBuy . first;
+        int count = itemToBuy . second;
+        if (  productsList . count( name ) or itemMatch ( name ))   // if product is in the product list -- exact match and one char mismatch
         {
-            auto j = warehouse . lower_bound( Product(i-> first, CDate(2100, 12, 31))  );
-            if ( j != warehouse.end() and j -> first .name == name )
+            auto itemInWarehouse = warehouse . lower_bound( Product( name,
+                                                             CDate(2100, 12, 31)) );
+            if ( itemInWarehouse != warehouse.end() and itemInWarehouse -> first . name == name )
             {
                 // if the WH item has count equal or less than in the shoppoing list -
                 // remove it from WH and keep in shopping list with corrected count
-                int warehouseItemCount = j -> second;
+                int warehouseItemCount = itemInWarehouse -> second;
                 if ( warehouseItemCount <= count )
                 {
                     count -= warehouseItemCount;
-                    warehouse . erase( j );
+                    warehouse . erase( itemInWarehouse );
                     productsList . erase(name);
-                    shoppingList . erase (i);
+                    shoppingList . remove ( itemToBuy );
                     shoppingList . emplace_back(make_pair(name, count));
-                    cout << "removing the item fully " << i->first << " and " << i ->second << endl;
+                    cout << "removing the item fully " << itemToBuy.first << " and " << itemToBuy .second << endl;
                 }
                 else // just to deduct the count from WH and remove from shopping list
                 {
                     warehouseItemCount -= count;
-                    cout << "deducting the count " << i->first << " and " << i ->second << endl;
-                    shoppingList . erase( i );
+                    cout << "deducting the count " << itemToBuy.first << " and " << itemToBuy .second << endl;
+//                    iterItem = std::find(shoppingList.begin(), shoppingList.end(), i);
+//                    shoppingList . erase( iterItem );
+                    shoppingList . remove( itemToBuy );
                 }
             }
         }
-        else i++;
-
     }
 }
 //===========================================================================================
