@@ -192,6 +192,7 @@ private:
     void                    sell            ( list<pair<string,int> > & shoppingList );
     list<pair<string,int> > expired         ( const CDate date );
     static bool             comparator      ( const pair <string,int>& first, const pair <string,int>& second );
+    bool itemMatch ( string & value );
 };
 //===========================================================================================
 CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDate, int count )
@@ -238,6 +239,58 @@ list < pair <string,int> > CSupermarket::expired ( const CDate date )
 //{
 //    return lhs.name < rhs.name;
 //}
+
+bool CSupermarket::itemMatch ( string & value  )
+{
+    if ( productsList.empty() )
+        return false;
+
+    bool moreDiffs = false;
+    string match;
+
+    for ( auto str : productsList )
+    {
+        if ( str . size() != value.size() )
+            continue;
+
+        bool oneStringDiff = false;
+
+        for ( int i = 0; i < str.size(); i++ )
+        {
+            if ( str [i] != value [i] )
+            {
+                // If first mismatch - ok
+                if ( !oneStringDiff )
+                    oneStringDiff = true;
+                // Second mismatch
+                else
+                {
+                    oneStringDiff = false;
+                    break;
+                }
+            }
+        }
+        // found first word with one char mismatch -> ok, but need to check the rest
+        if ( oneStringDiff and not moreDiffs )
+        {
+            moreDiffs = true;
+            match = str;
+            continue;
+        }
+
+        // already more words with one char mismatch exist
+        if ( oneStringDiff and moreDiffs )
+            return false;
+    }
+
+    if ( not match .empty() )
+    {
+        value = match;
+        return true;
+    }
+
+    return false;
+}
 //===========================================================================================
 void CSupermarket::sell ( list<pair<string,int> > & shoppingList )
 {
