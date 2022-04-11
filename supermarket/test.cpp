@@ -68,57 +68,63 @@ class Product
 public:
     string name;
     CDate expiryDate;
-    Product                 ( string name, CDate expiryDate)
-    : name ( name ), expiryDate ( expiryDate ) {}
-
-    bool operator ==        ( const Product & other ) const;
-    static bool comparator  ( const Product& lhs, const Product& rhs );
+    Product ( const string & name, const CDate & expiryDate)
+            : name ( name ), expiryDate ( expiryDate )
+            {}
 };
 //===========================================================================================
-bool Product::operator == ( const Product & other ) const
+struct productCompareStoreLatest
 {
-    return ( * this ) . name == other . name;
-}
+    bool operator () ( const Product & lhs, const Product & rhs ) const
+    {
+        if ( lhs . name != rhs . name)
+            return lhs . name < rhs . name;
+        return lhs . expiryDate > rhs . expiryDate;
+    }
+};
 //===========================================================================================
-bool Product::comparator (const Product & lhs, const Product & rhs)
+struct productCompareStoreNewest
 {
-    return lhs.name < rhs.name;
-}
-//===========================================================================================
-
-struct productCompare
-{
-    bool operator () (const Product &lhs, const Product &rhs) const {
-        if (lhs.name != rhs.name)
-            return lhs.name < rhs.name;
-        return lhs.expiryDate > rhs.expiryDate;
+    bool operator () ( const Product & lhs, const Product & rhs ) const
+    {
+        if ( lhs . name != rhs . name )
+            return lhs . name < rhs . name;
+        return lhs . expiryDate < rhs . expiryDate;
     }
 };
 //===========================================================================================
 class CSupermarket
 {
 private:
-    map <Product, int, productCompare> warehouse;
+    map <Product, int, productCompareStoreLatest> warehouseSortedByLatest;
+    map <Product, int, productCompareStoreNewest> warehouseSortedByNewest;
     set <string> productsList;
-            
-  public:
+
+public:
     CSupermarket () {};
 
     CSupermarket &          store           ( const string & name, const CDate & expiryDate, int count );
     void                    sell            ( list<pair<string,int> > & shoppingList );
-    list<pair<string,int> > expired         ( const CDate date );
+    list<pair<string,int> > expired         ( const CDate & date );
     static bool             comparator      ( const pair <string,int>& first, const pair <string,int>& second );
-    bool itemMatch ( string & value );
+    bool itemMatch                          ( string & value );
 };
 //===========================================================================================
 CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDate, int count )
 {
     Product product ( name, expiryDate );
-    if ( warehouse . count( product ))
-        warehouse [ product ] += count ;
+    if ( warehouseSortedByLatest . count ( product ) )
+    {
+        warehouseSortedByLatest [ product ] += count ;
+        warehouseSortedByNewest [ product ] += count ;
+    }
     else
-        warehouse [ product ] = count ;
-    productsList .insert(name );
+    {
+        warehouseSortedByLatest [ product ] = count ;
+        warehouseSortedByNewest [ product ] = count ;
+    }
+
+    productsList . insert (name );
     return ( * this );
 }
 //===========================================================================================
