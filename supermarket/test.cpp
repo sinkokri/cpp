@@ -99,7 +99,7 @@ public:
 
     CSupermarket &          store           ( const string & name, const CDate & expiryDate, int count );
     void                    sell            ( list<pair<string,int> > & shoppingList );
-    list<pair<string,int> > expired         ( const CDate & date );
+    list <pair<string,int>> expired         ( const CDate & date ) const;
     static bool             comparator      ( const pair <string,int>& first, const pair <string,int>& second );
     bool itemMatch                          ( string & value );
 };
@@ -122,40 +122,41 @@ CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDa
     return ( * this );
 }
 //===========================================================================================
-bool CSupermarket::comparator (const pair <string,int>& first, const pair <string,int>& second)
+bool CSupermarket::comparator ( const pair <string,int> & first, const pair <string,int> & second )
 {
-    return  first .second > second. second ;
+    return  first . second > second . second ;
 }
 //===========================================================================================
-list < pair <string,int> > CSupermarket::expired ( const CDate date )
+list < pair <string,int> > CSupermarket::expired ( const CDate & date ) const
 {
-    list <pair <string,int>> bucket;
-    for ( const auto & item: warehouse )
+    list <pair <string,int>> basket;
+    for ( const auto & item: warehouseSortedByNewest )
     {
         if ( item . first . expiryDate < date )
         {
             pair <string, int> pair (item . first .name, item . second);
 
-            if ( bucket .back() .first  == item . first. name)
+            if ( ! basket . empty() )
             {
-                int amount = bucket .back() . second + item.second;
-                bucket . pop_back();
-                bucket . emplace_back(item . first .name, amount );
+                if ( basket . back() . first == item . first . name )
+                {
+                    int amount = basket . back() . second + item . second;
+                    basket . pop_back();
+                    basket . emplace_back(item . first . name, amount );
+                }
+                else basket . push_back(pair );
             }
-             else {
-                bucket . push_back( pair );
-             }
+
+            else basket . push_back(pair );
+
         }
     }
-    if ( ! bucket . empty() )
-        bucket . sort( comparator );
-    return bucket;
-}//===========================================================================================
-//bool operator < (const Product & lhs, const Product & rhs)
-//{
-//    return lhs.name < rhs.name;
-//}
 
+    if ( ! basket . empty() )
+        basket . sort ( comparator );
+
+    return basket;
+}//===========================================================================================
 bool CSupermarket::itemMatch ( string & value  )
 {
     if ( productsList.empty() )
