@@ -19,7 +19,6 @@
 #include <memory>
 using namespace std;
 #endif /* __PROGTEST__ */
-
 //===========================================================================================
 class CDate
 {
@@ -29,17 +28,12 @@ private:
     int day;
 
 public:
-    CDate               ( int year, int month, int day );
+    CDate               ( int year, int month, int day )
+                        : year ( year ), month ( month ), day ( day )
+    {};
     bool operator >     ( const CDate & other ) const;
     bool operator <     ( const CDate & other ) const;
 };
-//===========================================================================================
-CDate::CDate (int year, int month, int day)
-{
-    this -> year = year;
-    this -> month = month;
-    this -> day = day;
-}
 //===========================================================================================
 bool CDate::operator < ( const CDate & other ) const
 {
@@ -70,7 +64,7 @@ public:
     CDate expiryDate;
     Product ( const string & name, const CDate & expiryDate)
             : name ( name ), expiryDate ( expiryDate )
-            {}
+    {}
 };
 //===========================================================================================
 struct productCompareStoreLatest
