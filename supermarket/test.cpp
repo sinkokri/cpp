@@ -24,127 +24,43 @@ using namespace std;
 class CDate
 {
 private:
-    int initYear;
-    int initMonth;
-    int initDay;
     int year;
     int month;
     int day;
-    int totalDays = 0 ;
-    int maxDays;
-    bool leap;
-    vector<int> monthLengths = { 0, 31, 28, 31,
-                                 30, 31, 30, 31,
-                                 31, 30, 31, 30, 31 };
 
-  public:
+public:
     CDate               ( int year, int month, int day );
     bool operator >     ( const CDate & other ) const;
     bool operator <     ( const CDate & other ) const;
-    void toDays         ( void );
-    void previousMonth  ( void );
-    void previousYear   ( void );
-    void resetMaxDays   ( void );
-    void checkLeapYear  ( void );
 };
 //===========================================================================================
 CDate::CDate (int year, int month, int day)
 {
     this -> year = year;
-    this -> initYear = year;
-
-    checkLeapYear();
-
-    this -> maxDays = this -> monthLengths.at( month );
-
-    if ( month < 1    ||
-         month > 12   ||
-         day   < 1    ||
-         day   > this -> maxDays )
-        throw exception();
-
     this -> month = month;
-    this -> initMonth = month;
     this -> day = day;
-    this -> initDay = day;
 }
 //===========================================================================================
 bool CDate::operator < ( const CDate & other ) const
 {
     CDate first = ( * this );
-    first . toDays();
-    CDate second = other;
-    second . toDays();
 
-    return first . totalDays < second . totalDays;
+    if ( first . year  != other . year )
+        return first . year < other . year;
+    if ( first . month != other . month )
+        return first . month < other . month;
+    return  first . day < other . day;
 }
 //===========================================================================================
 bool CDate::operator > ( const CDate & other ) const
 {
     CDate first = ( * this );
-    first . toDays();
-    CDate second = other;
-    second . toDays();
 
-    return first . totalDays > second . totalDays;
-}
-//===========================================================================================
-void CDate::toDays ( void )
-{
-    int count = 0;
-    count += this -> day;
-    while ( this -> year > 2000 )
-    {
-        previousMonth();
-        count += monthLengths.at(this -> month);
-    }
-    while ( this -> month > 1)
-    {
-        previousMonth();
-        count += monthLengths.at(this -> month);
-    }
-    this -> totalDays = count;
-}
-//===========================================================================================
-void CDate::previousMonth( void )
-{
-    if ( this-> month == 1 )
-    {
-        this-> month = 12;
-        previousYear();
-    }
-    else this-> month -= 1;
-    resetMaxDays();
-}
-//===========================================================================================
-void CDate::resetMaxDays( void )
-{
-    this -> maxDays = this -> monthLengths.at ( this -> month);
-}
-//===========================================================================================
-void CDate::previousYear( void )
-{
-    this -> year -= 1;
-    checkLeapYear();
-}
-//===========================================================================================
-void CDate::checkLeapYear( void )
-{
-    if (this -> year % 4 == 0)
-    {
-        if (this -> year % 100 == 0)
-        {
-            if (this -> year % 400 == 0)
-                this -> leap = true;
-            else this -> leap = false;
-        }
-        else this -> leap = true;
-    }
-    else this -> leap = false;
-
-    // directly resetting Feb days if it's Leap
-    if ( this -> leap ) this -> monthLengths.at( 2 ) = 29;
-    else this -> monthLengths.at( 2 ) = 28;
+    if ( first . year  != other . year )
+        return first . year > other . year;
+    if ( first . month != other . month )
+        return first . month > other . month;
+    return  first . day > other . day;
 }
 //===========================================================================================
 class Product
