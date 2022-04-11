@@ -291,47 +291,73 @@ bool CSupermarket::itemMatch ( string & value  )
 
     return false;
 }
+
+template <typename T>struct addressEquals
+{
+    addressEquals(T * ptr) : ptr_(ptr) {}
+    bool operator()(pair<string, int> & element) { return &element == ptr_; }
+    T * ptr_;
+};
 //===========================================================================================
 void CSupermarket::sell ( list<pair<string,int> > & shoppingList )
 {
 //    std::list<pair<string,int>>::const_iterator iterItem;
 //    while ( i != shoppingList.end() )
 //    auto pos = shoppingList.begin();
-//    for ( auto i = shoppingList.begin(); i!=shoppingList.end(); ++i )
-    for ( auto & itemToBuy: shoppingList )
+//    for ( auto & itemToBuy: shoppingList )
+
+//    typedef vector <pair<string,int>> tListTest;
+//    typedef vector<tListTest::iterator> toProcess;
+    vector<pair<string, int> *> toProcess;
+    for ( auto itemToBuy = shoppingList . begin(); itemToBuy != shoppingList . end(); ++ itemToBuy )
     {
-        string name = itemToBuy . first;
-        int count = itemToBuy . second;
-        if (  productsList . count( name ) or itemMatch ( name ))   // if product is in the product list -- exact match and one char mismatch
+        // if product is not in the product list --
+        // either by exact match or by one char mismatch --
+        // add it ( already changed if the name was incorrect) to processing list
+        if ( productsList . count ( itemToBuy -> first ) or itemMatch ( itemToBuy -> first ) )
+            toProcess . push_back( &(*itemToBuy));
+    }
+
+    for ( auto itemToProcess = toProcess . begin(); itemToProcess != toProcess . end(); ++ itemToProcess )
+    {
+        string name = ( * itemToProcess ) -> first;
+        // find the item in warehouse - first found is the latest expired
+        auto itemInWarehouse = warehouse . lower_bound( Product( name,
+                                                                 CDate(2100, 12, 31)) );
+        while ( itemInWarehouse != warehouse.end() and itemInWarehouse -> first . name == name )
         {
-            auto itemInWarehouse = warehouse . lower_bound( Product( name,
-                                                             CDate(2100, 12, 31)) );
-            if ( itemInWarehouse != warehouse.end() and itemInWarehouse -> first . name == name )
+            // if the WH item has count equal or less than in the shopping list -
+            // remove it from WH and keep the item in shopping list with corrected count
+            int warehouseItemCount = itemInWarehouse -> second;
+            if ( warehouseItemCount <= ( * itemToProcess ) -> second )
             {
-                // if the WH item has count equal or less than in the shoppoing list -
-                // remove it from WH and keep in shopping list with corrected count
-                int warehouseItemCount = itemInWarehouse -> second;
-                if ( warehouseItemCount <= count )
+                ( * itemToProcess ) -> second -= warehouseItemCount;
+
+                if ( ( * itemToProcess ) -> second == 0 )
                 {
-                    count -= warehouseItemCount;
+                    shoppingList . remove_if( addressEquals<pair<string, int>> (*itemToProcess) );
+                }
+
                     warehouse . erase( itemInWarehouse );
-                    productsList . erase(name);
-                    shoppingList . remove ( itemToBuy );
-                    shoppingList . emplace_back(make_pair(name, count));
-                    cout << "removing the item fully " << itemToBuy.first << " and " << itemToBuy .second << endl;
-                }
-                else // just to deduct the count from WH and remove from shopping list
-                {
-                    warehouseItemCount -= count;
-                    cout << "deducting the count " << itemToBuy.first << " and " << itemToBuy .second << endl;
-//                    iterItem = std::find(shoppingList.begin(), shoppingList.end(), i);
-//                    shoppingList . erase( iterItem );
-                    shoppingList . remove( itemToBuy );
-                }
+
+                    // checking if there are other matched items left
+                    itemInWarehouse = warehouse . lower_bound( Product( name,
+                                                                        CDate(2100, 12, 31)) );
+                    if ( itemInWarehouse == warehouse.end() or itemInWarehouse -> first . name != name )
+                        productsList . erase ( name );
+            }
+                // if the WH has more items than needed -
+                // deduct the count from WH and remove item from shopping list
+            else
+            {
+                itemInWarehouse -> second -= ( * itemToProcess ) -> second;
+                shoppingList . remove_if( addressEquals<pair<string, int>> (*itemToProcess) );
+                break;
             }
         }
     }
 }
+
 //===========================================================================================
 #ifndef __PROGTEST__
 int main ( void )
