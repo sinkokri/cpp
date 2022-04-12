@@ -101,7 +101,7 @@ public:
     void                    sell            ( list<pair<string,int> > & shoppingList );
     list <pair<string,int>> expired         ( const CDate & date ) const;
     static bool             comparator      ( const pair <string,int>& first, const pair <string,int>& second );
-    bool itemMatch                          ( string & value );
+    bool                    itemMatch       ( string & value );
 };
 //===========================================================================================
 CSupermarket & CSupermarket::store ( const string & name, const CDate & expiryDate, int count )
@@ -221,60 +221,64 @@ void CSupermarket::sell ( list<pair<string,int> > & shoppingList )
     vector<pair<string, int> *> toProcess;
     for ( auto itemToBuy = shoppingList . begin(); itemToBuy != shoppingList . end(); ++ itemToBuy )
     {
-        // if product is not in the product list --
+        // if product to sell is in the product list --
         // either by exact match or by one char mismatch --
-        // add it ( already changed if the name was incorrect) to processing list
+        // add it ( already changed if the name was incorrect) to processing list of pointers
         if ( productsList . count ( itemToBuy -> first ) or itemMatch ( itemToBuy -> first ) )
-            toProcess . push_back( &(*itemToBuy) );
+            toProcess . push_back( & ( * itemToBuy ) );
     }
 
     for ( auto itemToProcess = toProcess . begin(); itemToProcess != toProcess . end(); ++ itemToProcess )
     {
         string name = ( * itemToProcess ) -> first;
-        // find the item in warehouse - first found is the latest expired
-        auto itemInWarehouseLatest = warehouseSortedByLatest . lower_bound(Product(name,
-                                                                                   CDate(2100, 12, 31)) );
-        while (itemInWarehouseLatest != warehouseSortedByLatest.end() and itemInWarehouseLatest -> first . name == name )
+        // checking once more unique product list as during processing it can be amended
+        if ( productsList . count ( name ) )
         {
-            // if the WH item has count equal or less than in the shopping list -
-            // remove it from WH and keep the item in shopping list with corrected count
-            int warehouseItemCount = itemInWarehouseLatest -> second;
-            if ( warehouseItemCount <= ( * itemToProcess ) -> second )
+            // find the item in warehouse - first found is the latest expired
+            auto itemInWarehouseLatest = warehouseSortedByLatest . lower_bound (Product( name,
+                                                                                       CDate(2100, 12, 31)) );
+            while (itemInWarehouseLatest != warehouseSortedByLatest.end() and itemInWarehouseLatest -> first . name == name )
             {
-                ( * itemToProcess ) -> second -= warehouseItemCount;
-
-                if ( ( * itemToProcess ) -> second == 0 )
+                // if the WH item has count equal or less than in the shopping list -
+                // remove it from WH and keep the item in shopping list with corrected count
+                int warehouseItemCount = itemInWarehouseLatest -> second;
+                if ( warehouseItemCount <= ( * itemToProcess ) -> second )
                 {
-                    shoppingList . remove_if( addressEquals<pair<string, int>> (*itemToProcess) );
+                    ( * itemToProcess ) -> second -= warehouseItemCount;
+
+                    auto itemInWarehouseNewest = warehouseSortedByNewest . lower_bound( Product( ( * itemToProcess ) ->first,
+                                                                                CDate(1000, 12, 31)) );
+                    while ( itemInWarehouseNewest -> second != itemInWarehouseLatest -> second )
+                        std::advance(itemInWarehouseNewest, 1);
+
+                    warehouseSortedByNewest . erase ( itemInWarehouseNewest );
+                    warehouseSortedByLatest . erase (itemInWarehouseLatest );
+
+                    // checking if there are other matched items left
+                    // if left nothing with the same name - remove it from the list of unique names
+                    itemInWarehouseLatest = warehouseSortedByLatest . lower_bound (Product( name,
+                                                                                          CDate(2100, 12, 31 )) );
+                    if (itemInWarehouseLatest == warehouseSortedByLatest.end() or itemInWarehouseLatest -> first . name != name )
+                        productsList . erase ( name );
+
+                    if ( ( * itemToProcess ) -> second == 0 )
+                        shoppingList . remove_if( addressEquals<pair<string, int>> (* itemToProcess ) );
+
                 }
+                // if the WH has more items than needed to sell -
+                // deduct the count from both WH and remove item from shopping list
+                else
+                {
+                    auto itemInWarehouseNewest = warehouseSortedByNewest . upper_bound( Product(itemInWarehouseLatest -> first . name,
+                                                                               CDate(1000, 12, 31)) );
+                    while ( itemInWarehouseNewest -> second != itemInWarehouseLatest -> second )
+                        std::advance( itemInWarehouseNewest, 1 );
 
-                auto itemInWarehouseNewest = warehouseSortedByNewest . lower_bound( Product( ( * itemToProcess )->first,
-                                                                            CDate(1000, 12, 31)) );
-                while ( itemInWarehouseNewest -> second != itemInWarehouseLatest -> second )
-                    std::advance(itemInWarehouseNewest, 1);
-
-                warehouseSortedByNewest . erase ( itemInWarehouseNewest );
-                warehouseSortedByLatest . erase (itemInWarehouseLatest );
-
-                // checking if there are other matched items left
-                itemInWarehouseLatest = warehouseSortedByLatest . lower_bound(Product(name,
-                                                                                      CDate(2100, 12, 31)) );
-                if (itemInWarehouseLatest == warehouseSortedByLatest.end() or itemInWarehouseLatest -> first . name != name )
-                    productsList . erase ( name );
-            }
-                // if the WH has more items than needed -
-                // deduct the count from WH and remove item from shopping list
-            else
-            {
-                auto itemInWarehouseNewest = warehouseSortedByNewest . upper_bound( Product(itemInWarehouseLatest->first.name,
-                                                                           CDate(1000, 12, 31)) );
-                while ( itemInWarehouseNewest -> second != itemInWarehouseLatest -> second )
-                    std::advance(itemInWarehouseNewest, 1);
-
-                itemInWarehouseLatest -> second -= ( * itemToProcess ) -> second;
-                itemInWarehouseNewest -> second -= ( * itemToProcess ) -> second;
-                shoppingList . remove_if ( addressEquals<pair<string, int>> (*itemToProcess) );
-                break;
+                    itemInWarehouseLatest -> second -= ( * itemToProcess ) -> second;
+                    itemInWarehouseNewest -> second -= ( * itemToProcess ) -> second;
+                    shoppingList . remove_if ( addressEquals<pair<string, int>> (*itemToProcess ) );
+                    break;
+                }
             }
         }
     }
