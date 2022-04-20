@@ -159,10 +159,14 @@ bool CSupermarket::itemMatch ( string & value  )
      return false;
 }
 //===========================================================================================
-template <typename T>struct addressEquals
+template <typename T>
+struct addressEquals
 {
-    addressEquals(T * ptr) : ptr_(ptr) {}
-    bool operator()(pair<string, int> & element) const { return &element == ptr_; }
+    addressEquals ( T * ptr ) : ptr_( ptr ) {}
+    bool operator () ( pair<string, int> & element ) const
+    {
+        return &element == ptr_;
+    }
     T * ptr_;
 };
 //===========================================================================================
@@ -174,8 +178,7 @@ void CSupermarket::sell ( list<pair<string,int> > & shoppingList )
         // if product to sell is in the product list --
         // either by exact match or by one char mismatch --
         // add it ( already changed if the name was incorrect) to processing list of pointers
-        if ( warehouse . count ( itemToSell -> first ))
-            auto a = itemMatch ( itemToSell -> first ) ;
+        if ( warehouse . count ( itemToSell -> first ) or itemMatch ( itemToSell -> first ))
             toProcess . push_back( & (*itemToSell)  );
     }
 
