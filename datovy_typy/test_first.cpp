@@ -217,9 +217,13 @@ public:
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
-    void field ( const string & name ) const
+    const Base & field ( const string & name ) const
     {
-//        pair <string, Base> pair = make_pair (name, Base );
+        pair <string, Base *> pair = make_pair ( name, new Base());
+        auto field = std::find(m_StructFields.begin(), m_StructFields.end(), pair );
+        if ( field != m_StructFields . end () and field -> first  == name )
+            return *field -> second -> clone();
+        else throw Except ("Unknown field: " + name);
     }
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
