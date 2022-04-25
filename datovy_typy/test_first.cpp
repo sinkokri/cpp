@@ -89,7 +89,7 @@ public:
 //-------------------------------------------------------------------------------------------
     bool operator == ( const Base & other ) const override
     {
-        if ( other . type()  == ( * this ) . type() )
+        if ( other . getType() == ( *this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast <CDataTypeEnum * >( other . clone() );
             return m_EnumFields == anotherEnum -> m_EnumFields;
@@ -99,7 +99,7 @@ public:
 //-------------------------------------------------------------------------------------------
     bool operator != ( const Base & other ) const override
     {
-        if ( other . type()  == ( * this ) . type() )
+        if ( other . getType() == ( * this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast <CDataTypeEnum * > ( other . clone() );
             return m_EnumFields != anotherEnum -> m_EnumFields;
@@ -107,18 +107,19 @@ public:
         return true;
     }
 //-------------------------------------------------------------------------------------------
-    CDataTypeEnum & add( string field  )
+    CDataTypeEnum & add( const string & field  )
     {
         auto fieldExists = lower_bound (m_EnumFields . begin(), m_EnumFields . end(), field );
         if ( fieldExists != m_EnumFields . end() and ( * fieldExists ) == field )
-            cerr << "Duplicate enum value: " << field << '\n';
+            throw Except ( "Duplicate enum value: " + field );
         m_EnumFields . push_back(field );
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
     {
-        os << m_Type << endl;
+        Base::print( os );
+        os  << endl;
         if ( ! m_EnumFields . empty() )
         {
             os << "{ "  << endl;
@@ -140,15 +141,16 @@ protected:
 };
 //===========================================================================================
 template <typename T>
-bool operator < ( const pair <string, T> & left, const pair <string, T> & right )
+bool operator == ( const pair <string, T> & left, const pair <string, T> & right )
 {
-    return left . first < right . first;
+    return left . first == right . first;
 }
 //===========================================================================================
-bool operator == ( const pair <string, Base *> & left, const pair <string, Base *> & right )
-{
-    return  ( * left . second -> clone() )  ==  ( * right . second -> clone() );
-}
+//bool operator == ( const pair <string, Base *> & left, const pair <string, Base *> & right )
+//{
+//    return  ( * left . second -> clone() )  ==  ( * right . second -> clone() );
+//    return  ( left . first )  ==  (  right . first );
+//}
 //===========================================================================================
 bool operator != ( const pair <string, Base *> & left, const pair <string, Base *> & right )
 {
@@ -162,11 +164,11 @@ public:
 //-------------------------------------------------------------------------------------------
     Base * clone ( void ) const override { return new CDataTypeStruct ( * this ); }
 //-------------------------------------------------------------------------------------------
-    size_t getSize( void ) const override { return m_StructFields . size(); }
+    size_t getSize( void ) const override { return m_Size; }
 //-------------------------------------------------------------------------------------------
     bool operator == ( const Base & other ) const override
     {
-        if ( other . type()  == ( * this ) . type() )
+        if (other.getType() == (*this).getType() )
         {
             auto * anotherEnum = dynamic_cast<CDataTypeStruct*>( other . clone() );
             if ( m_StructFields . size() == anotherEnum -> m_StructFields . size() )
@@ -185,7 +187,7 @@ public:
 //-------------------------------------------------------------------------------------------
     bool operator != ( const Base & other ) const override
     {
-        if ( other . type() == ( * this ) . type() )
+        if ( other . getType() == ( *this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast<CDataTypeStruct*>( other . clone() );
             if ( m_StructFields . size() == anotherEnum -> m_StructFields . size() )
@@ -202,16 +204,16 @@ public:
         return true;
     }
 //-------------------------------------------------------------------------------------------
-    CDataTypeStruct & addField ( string fieldName, const Base & fieldType )
+    CDataTypeStruct & addField ( const string & fieldName, const Base & fieldType )
     {
         pair <string, Base *> pair = make_pair ( fieldName, fieldType . clone());
-        auto varExists = lower_bound ( m_StructFields . begin (), m_StructFields . end (), pair );
+        auto varExists = find ( m_StructFields . begin (), m_StructFields . end (), pair );
 
         if ( varExists != m_StructFields . end () and ( * varExists ) . first  == fieldName )
-            cerr << "Duplicate field: " << fieldName << '\n';
+            throw Except( "Duplicate field: " + fieldName );
 
         m_StructFields . emplace_back (  make_pair (fieldName,fieldType . clone() ) );
-        m_Size ++;
+        m_Size += fieldType . getSize();
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
@@ -222,14 +224,15 @@ public:
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
     {
-        os << m_Type << endl << "{ "  << endl;
+        Base::print( os );
+        os << endl << "{ "  << endl;
         if ( ! m_StructFields . empty() )
         {
             for ( auto & i: m_StructFields )
             {
                 os << "  "  ;
-                i . second->print(cout);
-                cout << " " << i.first << ";" << endl;
+                i . second -> print(cout );
+                cout << " " << i . first << ";" << endl;
             }
 
             os << "} " << endl;
@@ -237,8 +240,16 @@ public:
         else os << "" << endl;
     }
 //-------------------------------------------------------------------------------------------
+    CDataTypeStruct &  operator =  ( CDataTypeStruct other )
+    {
+        m_Size = other . m_Size;
+        m_Type . swap( other . m_Type );
+        m_StructFields . swap( other . m_StructFields ) ;
+        return ( * this );
+    }
+//-------------------------------------------------------------------------------------------
 protected:
-    vector<pair <string, Base *>> m_StructFields;
+    vector<pair<string, Base * >> m_StructFields;
 };
 //===========================================================================================
 #ifndef __PROGTEST__
