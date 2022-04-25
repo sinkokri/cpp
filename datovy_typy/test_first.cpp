@@ -51,17 +51,12 @@ protected:
     size_t m_Size;
     string m_Type;
 };
-////===========================================================================================
-//class Except: virtual public std::exception  {
-//
-//protected:
-//
-//    string m_ErrorMessage;               ///< Error number
-//    string m_Field;
-//public:
-//    explicit
-//    Except( string errorMessage, string field ){ m_ErrorMessage = errorMessage; m_Field = field ; }
-//};
+//===========================================================================================
+class Except: public invalid_argument
+{
+public:
+    Except( const string & errorMessage ): invalid_argument ( errorMessage ){}
+};
 //===========================================================================================
 ostream & operator << ( ostream & os, const Base & x)
 {
