@@ -27,26 +27,27 @@ using namespace std;
 class Base
 {
 public:
-                     Base        ( void ) = default;
-                     Base        ( const string & type ) : m_Type ( type ) { };
-                     Base        ( const Base & ) = default;
-    virtual          ~Base       ( void ) = default;
-    virtual Base &   operator =  ( Base other ) { m_Size = other . m_Size;
-                                                  m_Type.swap( other . m_Type );
-                                                  return ( * this ); }
+    Base                         ( void ) = default;
+    Base                         ( string  type ) : m_Type ( move( type )) {};
+    Base                         ( const Base & other ) { ( * this ) =  other; }
+    virtual          ~Base       ( void )  = default;
+
+//    virtual Base &   operator =  ( Base other ) {
+//                                                  m_Size = other . m_Size;
+//                                                  m_Type.swap( other . m_Type );
+//                                                  return ( * this ); }
 
     virtual size_t   getSize     ( void )               const { return m_Size; }
     virtual string   getType     ( void )               const { return m_Type; }
 
-    virtual bool     operator == ( const Base & other ) const { return other.getType() == (*this).getType(); }
-    virtual bool     operator != ( const Base & other ) const { return other.getType() != (*this).getType(); }
+    virtual bool     operator == ( const Base & other ) const { return other.getType() == ( * this ) . getType(); }
+    virtual bool     operator != ( const Base & other ) const { return other.getType() != ( * this ) . getType(); }
 
     virtual void     print       ( ostream & os )       const { os << getType(); }
-    virtual Base *   clone       ( void ) const { return new Base ( * this ); }
+    virtual Base *   clone       ( void )               const { return new Base ( * this ); }
 
     friend ostream & operator << ( ostream & os,
                                    const Base & x );
-
 protected:
     size_t m_Size;
     string m_Type;
