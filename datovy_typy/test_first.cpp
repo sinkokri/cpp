@@ -29,7 +29,7 @@ class Base
 public:
     Base                         ( void ) = default;
     Base                         ( string  type ) : m_Type ( move( type )) {};
-    Base                         ( const Base & other ) { ( * this ) =  other; }
+    Base                         ( const Base & other ) = default;
     virtual          ~Base       ( void )  = default;
 
 //    virtual Base &   operator =  ( Base other ) {
@@ -241,13 +241,22 @@ public:
         }
         else os << "" << endl;
     }
+
 //-------------------------------------------------------------------------------------------
     CDataTypeStruct &  operator =  ( CDataTypeStruct other )
     {
+        if (&other==this) return *this;
+        m_StructFields.clear();
         m_Size = other . m_Size;
-        m_Type . swap( other . m_Type );
-        m_StructFields . swap( other . m_StructFields ) ;
+        m_StructFields = other . m_StructFields;
         return ( * this );
+    }
+//-------------------------------------------------------------------------------------------
+    CDataTypeStruct ( CDataTypeStruct const &other )
+    {
+        m_StructFields . clear();
+        m_StructFields = other . m_StructFields;
+        m_Size = other . m_Size;
     }
 //-------------------------------------------------------------------------------------------
 protected:
