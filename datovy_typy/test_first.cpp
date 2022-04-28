@@ -32,10 +32,10 @@ public:
     Base                         ( const Base & other ) = default;
     virtual          ~Base       ( void )  = default;
 
-//    virtual Base &   operator =  ( Base other ) {
-//                                                  m_Size = other . m_Size;
-//                                                  m_Type.swap( other . m_Type );
-//                                                  return ( * this ); }
+    virtual Base &   operator =  ( Base & other ) { if ( & other == this ) return * this;
+                                                  m_Size = other . m_Size;
+                                                  m_Type.swap( other . m_Type );
+                                                  return ( * this ); }
 
     virtual size_t   getSize     ( void )               const { return m_Size; }
     virtual string   getType     ( void )               const { return m_Type; }
@@ -45,7 +45,7 @@ public:
 
     virtual void     print       ( ostream & os )       const { os << getType(); }
     virtual Base *   clone       ( void )               const { return new Base ( * this ); }
-
+    virtual void     clear       ( void )                     { delete this; }
     friend ostream & operator << ( ostream & os,
                                    const Base & x );
 protected:
@@ -64,13 +64,37 @@ class CDataTypeInt: public Base
 public:
     CDataTypeInt ( void ) : Base ( "int" ) { m_Size = 4; }
 //-------------------------------------------------------------------------------------------
-    Base * clone ( void ) const override { return new CDataTypeInt ( * this ); }
+    ~CDataTypeInt ( void ) {};
+//-------------------------------------------------------------------------------------------
+    CDataTypeInt  ( const CDataTypeInt & other ) : Base ( other ) {};
+//-------------------------------------------------------------------------------------------
+    CDataTypeInt &  operator =  ( CDataTypeInt & other )
+    {
+        if ( & other == this ) return * this;
+        m_Size = other . m_Size;
+        m_Type . swap( other . m_Type );
+        return ( * this );
+    }
+//-------------------------------------------------------------------------------------------
+    Base * clone ( void ) const { return new CDataTypeInt ( * this ); }
 };
 //===========================================================================================
 class CDataTypeDouble: public Base
 {
 public:
     CDataTypeDouble ( void ) : Base ( "double" ) { m_Size = 8; }
+//-------------------------------------------------------------------------------------------
+    ~CDataTypeDouble( void ) {};
+//-------------------------------------------------------------------------------------------
+    CDataTypeDouble  ( const CDataTypeDouble & other ) : Base(other) {};
+//-------------------------------------------------------------------------------------------
+    CDataTypeDouble &  operator =  ( CDataTypeDouble & other )
+    {
+        if ( & other == this ) return * this;
+        m_Size = other . m_Size;
+        m_Type . swap( other . m_Type );
+        return ( * this );
+    }
 //-------------------------------------------------------------------------------------------
     Base * clone ( void ) const override { return new CDataTypeDouble ( * this ); }
 };
@@ -80,6 +104,23 @@ class CDataTypeEnum: public Base
 public:
     CDataTypeEnum ( void ) : Base ( "enum" ) { m_Size = 4; }
 //-------------------------------------------------------------------------------------------
+    ~CDataTypeEnum( void ) { m_EnumFields.clear(); }
+//-------------------------------------------------------------------------------------------
+    CDataTypeEnum &  operator =  ( CDataTypeEnum  other )
+    {
+        if ( & other == this ) return * this;
+        m_Size = other . m_Size;
+        m_Type . swap( other . m_Type );
+        m_EnumFields = other . m_EnumFields ;
+        return ( * this );
+    }
+//-------------------------------------------------------------------------------------------
+    CDataTypeEnum ( CDataTypeEnum const &other ): Base(other)
+    {
+        m_EnumFields . clear();
+        m_EnumFields = other . m_EnumFields;
+    }
+//-------------------------------------------------------------------------------------------
     Base * clone ( void ) const override { return new CDataTypeEnum ( * this ); }
 //-------------------------------------------------------------------------------------------
     bool operator == ( const Base & other ) const override
@@ -87,7 +128,9 @@ public:
         if ( other . getType() == ( * this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast <CDataTypeEnum * >( other . clone() );
-            return m_EnumFields == anotherEnum -> m_EnumFields;
+            bool result = m_EnumFields == anotherEnum -> m_EnumFields;
+            anotherEnum -> clear();
+            return result;
         }
         return false;
     }
@@ -97,7 +140,9 @@ public:
         if ( other . getType() == ( * this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast <CDataTypeEnum * > ( other . clone() );
-            return m_EnumFields != anotherEnum -> m_EnumFields;
+            bool result = m_EnumFields != anotherEnum -> m_EnumFields;
+            anotherEnum -> clear();
+            return result;
         }
         return true;
     }
@@ -105,10 +150,11 @@ public:
     CDataTypeEnum & add( const string & field  )
     {
         auto fieldExists = lower_bound (m_EnumFields . begin(), m_EnumFields . end(), field );
+
         if ( fieldExists != m_EnumFields . end() and ( * fieldExists ) == field )
             throw invalid_argument ("Duplicate enum value: " + field );
 
-        m_EnumFields . push_back(field );
+        m_EnumFields . push_back( move( field ) );
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
@@ -147,7 +193,22 @@ class CDataTypeStruct: public Base
 public:
     CDataTypeStruct ( void ): Base ( "struct" ) {  m_Size = 0; }
 //-------------------------------------------------------------------------------------------
-    ~CDataTypeStruct  () override
+    CDataTypeStruct &  operator =  ( CDataTypeStruct other )
+    {
+        if ( & other == this ) return * this;
+        m_StructFields . clear();
+        m_Size = other . m_Size;
+        swap(m_StructFields, other . m_StructFields);
+        return ( * this );
+    }
+//-------------------------------------------------------------------------------------------
+    CDataTypeStruct ( const CDataTypeStruct & other ): Base(other) {
+        m_StructFields . clear();
+        m_StructFields = other . m_StructFields;
+        m_Size = other . m_Size;
+    }
+//-------------------------------------------------------------------------------------------
+    ~CDataTypeStruct  ( void )
     {
         for ( size_t i = 0; i < m_StructFields . size() ; i++ )
         {
@@ -171,11 +232,15 @@ public:
                 for ( size_t i = 0; i < m_StructFields . size(); i ++ )
                 {
                     if ( ( * m_StructFields . at ( i ) . second) != ( * anotherEnum -> m_StructFields . at( i ) . second) )
+                    {
+                        anotherEnum -> clear();
                         return false;
-
+                    }
                 }
+                anotherEnum -> clear();
                 return true;
             }
+            anotherEnum -> clear();
             return false;
         }
         return false;
@@ -190,11 +255,16 @@ public:
             {
                 for ( size_t i = 0; i < m_StructFields . size(); i ++ )
                 {
-                    if ( (*m_StructFields . at( i ) . second) != (*anotherEnum -> m_StructFields . at( i ) . second) )
+                    if ( ( * m_StructFields . at( i ) . second) != ( * anotherEnum -> m_StructFields . at( i ) . second ) )
+                    {
+                        anotherEnum -> clear();
                         return true;
+                    }
                 }
+                anotherEnum -> clear();
                 return false;
             }
+            anotherEnum -> clear();
             return true;
         }
         return true;
@@ -208,7 +278,7 @@ public:
         if ( varExists != m_StructFields . end () and ( * varExists ) . first  == fieldName )
             throw invalid_argument ( "Duplicate field: " + fieldName );
 
-        m_StructFields . emplace_back (  make_pair (fieldName,fieldType . clone() ) );
+        m_StructFields . emplace_back (  move( pair ) );
         m_Size += fieldType . getSize();
         return ( * this );
     }
@@ -216,12 +286,13 @@ public:
     const Base & field ( const string & name ) const
     {
         pair <string, Base *> pair = make_pair ( name, nullptr );
+
         auto field = std::find(m_StructFields.begin(), m_StructFields.end(), pair );
+
         if ( field != m_StructFields . end () and field -> first  == name )
             return * field -> second -> clone();
         else
             throw invalid_argument ("Unknown field: " + name );
-
     }
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
@@ -233,32 +304,14 @@ public:
             for ( auto & i: m_StructFields )
             {
                 os << "  "  ;
-                i . second -> print(cout );
-                cout << " " << i . first << ";" << endl;
+                os << * i . second;
+                os << " " << i . first << ";" << endl;
             }
 
             os << "} " << endl;
         }
         else os << "" << endl;
     }
-
-//-------------------------------------------------------------------------------------------
-    CDataTypeStruct &  operator =  ( CDataTypeStruct other )
-    {
-        if (&other==this) return *this;
-        m_StructFields.clear();
-        m_Size = other . m_Size;
-        m_StructFields = other . m_StructFields;
-        return ( * this );
-    }
-//-------------------------------------------------------------------------------------------
-    CDataTypeStruct ( CDataTypeStruct const &other )
-    {
-        m_StructFields . clear();
-        m_StructFields = other . m_StructFields;
-        m_Size = other . m_Size;
-    }
-//-------------------------------------------------------------------------------------------
 protected:
     vector<pair<string, Base * >> m_StructFields;
 };
@@ -267,8 +320,12 @@ protected:
 static bool        whitespaceMatch                         ( const string    & a,
                                                              const string    & b )
 {
-  // todo
-  return true;
+    string a1 = a;
+    a1.erase(std::remove_if(a1.begin(), a1.end(), ::isspace), a1.end());
+    string b1 = b;
+    b1.erase(std::remove_if(b1.begin(), b1.end(), ::isspace), b1.end());
+
+  return a1 == b1;
 }
 template <typename T_>
 static bool        whitespaceMatch                         ( const T_        & x,
