@@ -53,11 +53,6 @@ protected:
     string m_Type;
 };
 //===========================================================================================
-struct Except: public invalid_argument
-{
-    Except (const char  * message ): invalid_argument ( message ){ delete message; }
-};
-//===========================================================================================
 ostream & operator << ( ostream & os, const Base & x)
 {
     x . print ( os );
@@ -111,13 +106,8 @@ public:
     {
         auto fieldExists = lower_bound (m_EnumFields . begin(), m_EnumFields . end(), field );
         if ( fieldExists != m_EnumFields . end() and ( * fieldExists ) == field )
-        {
-            string exception = "Duplicate enum value: " + field;
-            size_t n = exception.length();
-            char * message = new char [n + 1];
-            strcpy(message, exception.c_str());
-            throw Except ( message );
-        }
+            throw invalid_argument ("Duplicate enum value: " + field );
+
         m_EnumFields . push_back(field );
         return ( * this );
     }
@@ -216,13 +206,8 @@ public:
         auto varExists = find ( m_StructFields . begin (), m_StructFields . end (), pair );
 
         if ( varExists != m_StructFields . end () and ( * varExists ) . first  == fieldName )
-        {
-            string exception = "Duplicate field: " + fieldName;
-            size_t n = exception.length();
-            char * message = new char [n + 1];
-            strcpy(message, exception.c_str());
-            throw Except ( message );
-        }
+            throw invalid_argument ( "Duplicate field: " + fieldName );
+
         m_StructFields . emplace_back (  make_pair (fieldName,fieldType . clone() ) );
         m_Size += fieldType . getSize();
         return ( * this );
@@ -235,13 +220,8 @@ public:
         if ( field != m_StructFields . end () and field -> first  == name )
             return * field -> second -> clone();
         else
-        {
-            string exception = "Unknown field: " + name;
-            size_t n = exception.length();
-            char * message = new char [n + 1];
-            strcpy(message, exception.c_str());
-            throw Except ( message );
-        }
+            throw invalid_argument ("Unknown field: " + name );
+
     }
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
