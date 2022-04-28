@@ -69,7 +69,7 @@ class CDataTypeInt: public Base
 public:
     CDataTypeInt ( void ) : Base ( "int" ) { m_Size = 4; }
 //-------------------------------------------------------------------------------------------
-    Base * clone () const override { return new CDataTypeInt ( * this ); }
+    Base * clone ( void ) const override { return new CDataTypeInt ( * this ); }
 };
 //===========================================================================================
 class CDataTypeDouble: public Base
@@ -77,7 +77,7 @@ class CDataTypeDouble: public Base
 public:
     CDataTypeDouble ( void ) : Base ( "double" ) { m_Size = 8; }
 //-------------------------------------------------------------------------------------------
-    Base * clone () const override { return new CDataTypeDouble ( * this ); }
+    Base * clone ( void ) const override { return new CDataTypeDouble ( * this ); }
 };
 //===========================================================================================
 class CDataTypeEnum: public Base
@@ -85,11 +85,11 @@ class CDataTypeEnum: public Base
 public:
     CDataTypeEnum ( void ) : Base ( "enum" ) { m_Size = 4; }
 //-------------------------------------------------------------------------------------------
-    Base * clone () const override { return new CDataTypeEnum ( * this ); }
+    Base * clone ( void ) const override { return new CDataTypeEnum ( * this ); }
 //-------------------------------------------------------------------------------------------
     bool operator == ( const Base & other ) const override
     {
-        if ( other . getType() == ( *this ) . getType() )
+        if ( other . getType() == ( * this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast <CDataTypeEnum * >( other . clone() );
             return m_EnumFields == anotherEnum -> m_EnumFields;
@@ -111,7 +111,13 @@ public:
     {
         auto fieldExists = lower_bound (m_EnumFields . begin(), m_EnumFields . end(), field );
         if ( fieldExists != m_EnumFields . end() and ( * fieldExists ) == field )
-            throw Except ( "Duplicate enum value: " + field );
+        {
+            string exception = "Duplicate enum value: " + field;
+            size_t n = exception.length();
+            char * message = new char [n + 1];
+            strcpy(message, exception.c_str());
+            throw Except ( message );
+        }
         m_EnumFields . push_back(field );
         return ( * this );
     }
@@ -146,21 +152,20 @@ bool operator == ( const pair <string, T> & left, const pair <string, T> & right
     return left . first == right . first;
 }
 //===========================================================================================
-//bool operator == ( const pair <string, Base *> & left, const pair <string, Base *> & right )
-//{
-//    return  ( * left . second -> clone() )  ==  ( * right . second -> clone() );
-//    return  ( left . first )  ==  (  right . first );
-//}
-//===========================================================================================
-bool operator != ( const pair <string, Base *> & left, const pair <string, Base *> & right )
-{
-    return ( * left . second -> clone() ) != ( * right . second -> clone() );
-}
-//===========================================================================================
 class CDataTypeStruct: public Base
 {
 public:
     CDataTypeStruct ( void ): Base ( "struct" ) {  m_Size = 0; }
+//-------------------------------------------------------------------------------------------
+    ~CDataTypeStruct  () override
+    {
+        for ( size_t i = 0; i < m_StructFields . size() ; i++ )
+        {
+            m_StructFields [i] . second = nullptr;
+            m_StructFields [i] . first . clear();
+        }
+        m_StructFields . clear();
+    };
 //-------------------------------------------------------------------------------------------
     Base * clone ( void ) const override { return new CDataTypeStruct ( * this ); }
 //-------------------------------------------------------------------------------------------
@@ -168,15 +173,16 @@ public:
 //-------------------------------------------------------------------------------------------
     bool operator == ( const Base & other ) const override
     {
-        if (other.getType() == (*this).getType() )
+        if ( other . getType() == ( * this ) . getType() )
         {
             auto * anotherEnum = dynamic_cast<CDataTypeStruct*>( other . clone() );
             if ( m_StructFields . size() == anotherEnum -> m_StructFields . size() )
             {
                 for ( size_t i = 0; i < m_StructFields . size(); i ++ )
                 {
-                    if ( m_StructFields . at( i )   != anotherEnum -> m_StructFields . at( i )  )
+                    if ( ( * m_StructFields . at ( i ) . second) != ( * anotherEnum -> m_StructFields . at( i ) . second) )
                         return false;
+
                 }
                 return true;
             }
@@ -189,12 +195,12 @@ public:
     {
         if ( other . getType() == ( *this ) . getType() )
         {
-            auto * anotherEnum = dynamic_cast<CDataTypeStruct*>( other . clone() );
+            auto * anotherEnum = dynamic_cast<CDataTypeStruct * >( other . clone() );
             if ( m_StructFields . size() == anotherEnum -> m_StructFields . size() )
             {
                 for ( size_t i = 0; i < m_StructFields . size(); i ++ )
                 {
-                    if ( m_StructFields . at( i )  != anotherEnum -> m_StructFields . at( i )   )
+                    if ( (*m_StructFields . at( i ) . second) != (*anotherEnum -> m_StructFields . at( i ) . second) )
                         return true;
                 }
                 return false;
@@ -210,8 +216,13 @@ public:
         auto varExists = find ( m_StructFields . begin (), m_StructFields . end (), pair );
 
         if ( varExists != m_StructFields . end () and ( * varExists ) . first  == fieldName )
-            throw Except( "Duplicate field: " + fieldName );
-
+        {
+            string exception = "Duplicate field: " + fieldName;
+            size_t n = exception.length();
+            char * message = new char [n + 1];
+            strcpy(message, exception.c_str());
+            throw Except ( message );
+        }
         m_StructFields . emplace_back (  make_pair (fieldName,fieldType . clone() ) );
         m_Size += fieldType . getSize();
         return ( * this );
@@ -219,11 +230,18 @@ public:
 //-------------------------------------------------------------------------------------------
     const Base & field ( const string & name ) const
     {
-        pair <string, Base *> pair = make_pair ( name, new Base());
+        pair <string, Base *> pair = make_pair ( name, nullptr );
         auto field = std::find(m_StructFields.begin(), m_StructFields.end(), pair );
         if ( field != m_StructFields . end () and field -> first  == name )
-            return *field -> second -> clone();
-        else throw Except ("Unknown field: " + name);
+            return * field -> second -> clone();
+        else
+        {
+            string exception = "Unknown field: " + name;
+            size_t n = exception.length();
+            char * message = new char [n + 1];
+            strcpy(message, exception.c_str());
+            throw Except ( message );
+        }
     }
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
