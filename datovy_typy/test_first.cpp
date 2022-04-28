@@ -53,10 +53,9 @@ protected:
     string m_Type;
 };
 //===========================================================================================
-class Except: public invalid_argument
+struct Except: public invalid_argument
 {
-public:
-    Except( const string & errorMessage ): invalid_argument ( errorMessage ){}
+    Except (const char  * message ): invalid_argument ( message ){ delete message; }
 };
 //===========================================================================================
 ostream & operator << ( ostream & os, const Base & x)
