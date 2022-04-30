@@ -64,19 +64,19 @@ class CDataTypeInt: public Base
 public:
     CDataTypeInt ( void ) : Base ( "int" ) { m_Size = 4; }
 //-------------------------------------------------------------------------------------------
-    ~CDataTypeInt ( void ) {};
+    virtual  ~CDataTypeInt ( void ) {};
 //-------------------------------------------------------------------------------------------
     CDataTypeInt  ( const CDataTypeInt & other ) : Base ( other ) {};
 //-------------------------------------------------------------------------------------------
-    CDataTypeInt &  operator =  ( CDataTypeInt & other )
+    CDataTypeInt &  operator =  ( const CDataTypeInt & other )
     {
         if ( & other == this ) return * this;
         m_Size = other . m_Size;
-        m_Type . swap( other . m_Type );
+        m_Type = other . m_Type;
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
-    Base * clone ( void ) const { return new CDataTypeInt ( * this ); }
+    virtual Base * clone ( void ) const { return new CDataTypeInt ( * this ); }
 };
 //===========================================================================================
 class CDataTypeDouble: public Base
@@ -84,19 +84,19 @@ class CDataTypeDouble: public Base
 public:
     CDataTypeDouble ( void ) : Base ( "double" ) { m_Size = 8; }
 //-------------------------------------------------------------------------------------------
-    ~CDataTypeDouble( void ) {};
+    virtual  ~CDataTypeDouble( void ) {};
 //-------------------------------------------------------------------------------------------
     CDataTypeDouble  ( const CDataTypeDouble & other ) : Base(other) {};
 //-------------------------------------------------------------------------------------------
-    CDataTypeDouble &  operator =  ( CDataTypeDouble & other )
+    CDataTypeDouble &  operator =  ( const CDataTypeDouble & other )
     {
         if ( & other == this ) return * this;
         m_Size = other . m_Size;
-        m_Type . swap( other . m_Type );
+        m_Type = other . m_Type;
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
-    Base * clone ( void ) const override { return new CDataTypeDouble ( * this ); }
+    virtual Base * clone ( void ) const override { return new CDataTypeDouble ( * this ); }
 };
 //===========================================================================================
 class CDataTypeEnum: public Base
@@ -104,14 +104,14 @@ class CDataTypeEnum: public Base
 public:
     CDataTypeEnum ( void ) : Base ( "enum" ) { m_Size = 4; }
 //-------------------------------------------------------------------------------------------
-    ~CDataTypeEnum( void ) { m_EnumFields.clear(); }
+   virtual  ~CDataTypeEnum( void ) = default;
 //-------------------------------------------------------------------------------------------
-    CDataTypeEnum &  operator =  ( CDataTypeEnum  other )
+    CDataTypeEnum &  operator =  ( const CDataTypeEnum & other )
     {
         if ( & other == this ) return * this;
         m_Size = other . m_Size;
-        m_Type . swap( other . m_Type );
-        m_EnumFields = other . m_EnumFields ;
+        m_Type = other . m_Type;
+        m_EnumFields = other . m_EnumFields ; // vector<string>
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
@@ -121,15 +121,15 @@ public:
         m_EnumFields = other . m_EnumFields;
     }
 //-------------------------------------------------------------------------------------------
-    Base * clone ( void ) const override { return new CDataTypeEnum ( * this ); }
+    virtual Base * clone ( void ) const override { return new CDataTypeEnum ( * this ); }
 //-------------------------------------------------------------------------------------------
     bool operator == ( const Base & other ) const override
     {
         if ( other . getType() == ( * this ) . getType() )
         {
-            auto * anotherEnum = dynamic_cast <CDataTypeEnum * >( other . clone() );
-            bool result = m_EnumFields == anotherEnum -> m_EnumFields;
-            anotherEnum -> clear();
+            auto * enumPtr = dynamic_cast <CDataTypeEnum * >( other . clone() );
+            bool result = m_EnumFields == enumPtr -> m_EnumFields;
+            enumPtr -> clear();
             return result;
         }
         return false;
@@ -139,9 +139,9 @@ public:
     {
         if ( other . getType() == ( * this ) . getType() )
         {
-            auto * anotherEnum = dynamic_cast <CDataTypeEnum * > ( other . clone() );
-            bool result = m_EnumFields != anotherEnum -> m_EnumFields;
-            anotherEnum -> clear();
+            auto * enumPtr = dynamic_cast <CDataTypeEnum * > ( other . clone() );
+            bool result = m_EnumFields != enumPtr -> m_EnumFields;
+            enumPtr -> clear();
             return result;
         }
         return true;
@@ -154,7 +154,7 @@ public:
         if ( fieldExists != m_EnumFields . end() and ( * fieldExists ) == field )
             throw invalid_argument ("Duplicate enum value: " + field );
 
-        m_EnumFields . push_back( move( field ) );
+        m_EnumFields . push_back(  field  );
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
@@ -182,43 +182,52 @@ protected:
     vector <string> m_EnumFields;
 };
 //===========================================================================================
-template <typename T>
-bool operator == ( const pair <string, T> & left, const pair <string, T> & right )
-{
-    return left . first == right . first;
-}
-//===========================================================================================
 class CDataTypeStruct: public Base
 {
 public:
     CDataTypeStruct ( void ): Base ( "struct" ) {  m_Size = 0; }
 //-------------------------------------------------------------------------------------------
-    CDataTypeStruct &  operator =  ( CDataTypeStruct other )
+    CDataTypeStruct &  operator =  ( const CDataTypeStruct  & other )
     {
         if ( & other == this ) return * this;
         m_StructFields . clear();
         m_Size = other . m_Size;
-        swap(m_StructFields, other . m_StructFields);
+        // deep copy of vector
+        vector<pair<string, Base * >> newVector;
+        for ( size_t i = 0; i < other.m_StructFields.size(); i++ )
+        {
+            auto newPtr = other . m_StructFields . at(i ) . second -> clone();
+            newVector . emplace_back( other . m_StructFields . at( i ) . first, newPtr );
+        }
+        m_StructFields = newVector;
+        m_Type = other . getType();
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
-    CDataTypeStruct ( const CDataTypeStruct & other ): Base(other) {
+    CDataTypeStruct ( const CDataTypeStruct & other ): Base(other)
+    {
         m_StructFields . clear();
-        m_StructFields = other . m_StructFields;
-        m_Size = other . m_Size;
+        // deep copy of vector
+        vector<pair<string, Base * >> newVector;
+        for ( size_t i = 0; i < other.m_StructFields.size(); i++ )
+        {
+            auto newPtr = other . m_StructFields . at(i) . second -> clone();
+            newVector . emplace_back( other . m_StructFields .at( i ) . first, move( newPtr ) );
+        }
+        m_StructFields = newVector;
     }
 //-------------------------------------------------------------------------------------------
-    ~CDataTypeStruct  ( void )
+    virtual ~CDataTypeStruct  ( void )
     {
         for ( size_t i = 0; i < m_StructFields . size() ; i++ )
         {
-            m_StructFields [i] . second = nullptr;
-            m_StructFields [i] . first . clear();
+            m_StructFields [i] . second -> clear(); // Base method
+            m_StructFields [i] . first . clear(); // string clear
         }
         m_StructFields . clear();
     };
 //-------------------------------------------------------------------------------------------
-    Base * clone ( void ) const override { return new CDataTypeStruct ( * this ); }
+    virtual Base * clone ( void ) const override { return new CDataTypeStruct ( * this ); }
 //-------------------------------------------------------------------------------------------
     size_t getSize( void ) const override { return m_Size; }
 //-------------------------------------------------------------------------------------------
@@ -226,21 +235,21 @@ public:
     {
         if ( other . getType() == ( * this ) . getType() )
         {
-            auto * anotherEnum = dynamic_cast<CDataTypeStruct*>( other . clone() );
-            if ( m_StructFields . size() == anotherEnum -> m_StructFields . size() )
+            auto * strPtr = dynamic_cast<CDataTypeStruct*>( other . clone() );
+            if ( m_StructFields . size() == strPtr -> m_StructFields . size() )
             {
                 for ( size_t i = 0; i < m_StructFields . size(); i ++ )
                 {
-                    if ( ( * m_StructFields . at ( i ) . second) != ( * anotherEnum -> m_StructFields . at( i ) . second) )
+                    if ( ( * m_StructFields . at ( i ) . second) != ( * strPtr -> m_StructFields . at( i ) . second) )
                     {
-                        anotherEnum -> clear();
+                        strPtr -> clear();
                         return false;
                     }
                 }
-                anotherEnum -> clear();
+                strPtr -> clear();
                 return true;
             }
-            anotherEnum -> clear();
+            strPtr -> clear();
             return false;
         }
         return false;
@@ -250,21 +259,21 @@ public:
     {
         if ( other . getType() == ( *this ) . getType() )
         {
-            auto * anotherEnum = dynamic_cast<CDataTypeStruct * >( other . clone() );
-            if ( m_StructFields . size() == anotherEnum -> m_StructFields . size() )
+            auto * strPtr = dynamic_cast<CDataTypeStruct * >( other . clone() );
+            if ( m_StructFields . size() == strPtr -> m_StructFields . size() )
             {
                 for ( size_t i = 0; i < m_StructFields . size(); i ++ )
                 {
-                    if ( ( * m_StructFields . at( i ) . second) != ( * anotherEnum -> m_StructFields . at( i ) . second ) )
+                    if ( ( * m_StructFields . at( i ) . second) != ( * strPtr -> m_StructFields . at( i ) . second ) )
                     {
-                        anotherEnum -> clear();
+                        strPtr -> clear();
                         return true;
                     }
                 }
-                anotherEnum -> clear();
+                strPtr -> clear();
                 return false;
             }
-            anotherEnum -> clear();
+            strPtr -> clear();
             return true;
         }
         return true;
@@ -272,27 +281,24 @@ public:
 //-------------------------------------------------------------------------------------------
     CDataTypeStruct & addField ( const string & fieldName, const Base & fieldType )
     {
-        pair <string, Base *> pair = make_pair ( fieldName, fieldType . clone());
-        auto varExists = find ( m_StructFields . begin (), m_StructFields . end (), pair );
-
-        if ( varExists != m_StructFields . end () and ( * varExists ) . first  == fieldName )
-            throw invalid_argument ( "Duplicate field: " + fieldName );
-
-        m_StructFields . emplace_back (  move( pair ) );
+        for ( const auto & field: m_StructFields )
+        {
+            if ( field . first == fieldName )
+                throw invalid_argument ( "Duplicate field: " + fieldName );
+        }
+        m_StructFields . emplace_back (  make_pair (  fieldName, fieldType . clone() ));
         m_Size += fieldType . getSize();
         return ( * this );
     }
 //-------------------------------------------------------------------------------------------
     const Base & field ( const string & name ) const
     {
-        pair <string, Base *> pair = make_pair ( name, nullptr );
-
-        auto field = std::find(m_StructFields.begin(), m_StructFields.end(), pair );
-
-        if ( field != m_StructFields . end () and field -> first  == name )
-            return * field -> second -> clone();
-        else
-            throw invalid_argument ("Unknown field: " + name );
+        for ( const auto & field: m_StructFields )
+        {
+            if ( field . first == name )
+                return * field . second;
+        }
+        throw invalid_argument ("Unknown field: " + name );
     }
 //-------------------------------------------------------------------------------------------
     void print( ostream & os ) const override
