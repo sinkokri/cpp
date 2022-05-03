@@ -34,13 +34,12 @@ private:
   public:
     CIndex ( const T_& a,  Comp  cmp = Comp{}) : seq ( a ), comparator ( cmp )
     {
-        length = 0;
-        for (auto i: seq) length++;
+        length = seq.size();
     }
 
     ~CIndex() = default;
 
-    set<size_t> search ( const T_& sub )
+    set<size_t> search ( const T_& sub ) const
     {
         set<size_t> res;
 
@@ -52,33 +51,39 @@ private:
             return res;
         }
 
-        int index;
+        size_t seqIndex = 0;
+        size_t subIndex = 0;
 
-        for ( size_t i = 0; i <= length - sub.length(); ++i)
+        auto currentSeqElem = seq.begin();
+
+       while ( seqIndex <= length - sub.size())
         {
-            index = i;
-
-            // for each letter in given sequence checking match for subsequence
-            for ( size_t j = 0; j < sub.length(); ++j )
+            auto tmpSeqElem = currentSeqElem;
+            auto currentSubElem = sub.begin();
+            subIndex = 0;
+            while( subIndex < sub.size())
             {
                 // if equals
-                if ( not comparator ( seq . at ( i ), sub . at( j )) and
-                     not comparator ( sub . at ( j ), seq . at ( i )))
+                if ( not comparator ( *tmpSeqElem, *currentSubElem) and
+                     not comparator ( *currentSubElem, *tmpSeqElem))
                 {
-                    if ( j == sub . size () - 1 )
+                    if ( subIndex == sub.size() - 1 )
                     {
-                        res . insert( index );
-                        i = index;
+                        res . insert( seqIndex );
+                        advance(currentSeqElem, 1);
                         break;
                     }
-                    ++i;
+                    advance(currentSubElem, 1);
+                    tmpSeqElem = next(tmpSeqElem);
+                    subIndex += 1;
                 }
                 else
                 {
-                    i = index;
+                    advance(currentSeqElem, 1);
                     break;
                 }
             }
+            seqIndex += 1;
         }
         return  res;
     }
