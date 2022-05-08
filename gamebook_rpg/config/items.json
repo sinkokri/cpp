@@ -1,0 +1,11 @@
+{
+  "silver_coins": {
+    "name": "Silver Coins",
+    "description": "Silver coins, quite useless in maze."
+  },
+
+  "iron_horseshoe": {
+    "name": "Iron Horseshoe",
+    "description": "A heavy old iron horseshoe can bring some luck, but its not certain."
+  }
+}

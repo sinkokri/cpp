@@ -1,0 +1,59 @@
+{
+  "creature1": {
+    "name": "Minotaur",
+    "health": 16,
+    "strength": 5,
+    "inventory": {
+      "items": [
+        {
+          "silver_coins": 100
+        },
+        {
+          "iron_horseshoe": 1
+        }
+      ],
+      "weapons": [
+        {
+          "silver_axe": 1
+        }
+      ],
+      "armors": [
+      ],
+      "food": [
+        {
+          "apple": 3
+        },
+        {
+          "carrot_pie": 1
+        }
+      ]
+    }
+  },
+  "creature2": {
+    "name": "Chimera",
+    "health": 9,
+    "strength": 3,
+    "inventory": {
+      "items": [
+        {
+          "item_gold_coin": 5
+        }
+      ],
+      "weapons": [
+      ],
+      "armors": [
+        {
+          "iron_shield": 1
+        }
+      ],
+      "food": [
+        {
+          "apple": 3
+        },
+        {
+          "carrot_pie": 1
+        }
+      ]
+    }
+  }
+}

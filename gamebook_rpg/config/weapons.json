@@ -1,0 +1,25 @@
+{
+  "mjolnir": {
+    "name": "Mjölnir",
+    "damage": 5,
+    "description": "Magical hammer, loved by scandinavians. The best weapon."
+  },
+
+  "silver_axe": {
+    "name": "Silver axe",
+    "damage": 2,
+    "description": "Good one to cut tails of some nasty monsters."
+  },
+
+  "crossbow": {
+    "name": "Crossbow",
+    "damage": 3,
+    "description": "Nice and shiny crossbow is good against any type of monster."
+  },
+
+  "broken_dagger": {
+    "name": "Broken dagger",
+    "damage": -1,
+    "description": "You definitely don't want it, it can even cut your finger."
+  }
+}

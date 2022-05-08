@@ -1,0 +1,19 @@
+{
+  "apple": {
+    "name": "Apple",
+    "health": 1,
+    "description": "Big juicy apple. Gives not much, but at least some minor recharge."
+  },
+
+  "carrot_pie": {
+    "name": "Carrot pie",
+    "defense": 2,
+    "description": "Carrot pie tastes a bit weird, but still brings some strength to fight."
+  },
+
+  "dirty_water": {
+    "name": "Dirty water",
+    "defense": -1,
+    "description": "Dirty water in black jar - not to see what else is inside."
+  }
+}

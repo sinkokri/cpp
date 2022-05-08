@@ -1,0 +1,25 @@
+{
+  "location": "room1",
+  "name": "Elf",
+  "health": 6,
+  "strength": 1,
+  "inventory": {
+    "items": [
+      {
+        "silver_coins": 5
+      }
+    ],
+    "weapons": [
+      {
+        "crossbow": 1
+      }
+    ],
+    "armors": [
+    ],
+    "food": [
+      {
+        "carrot_pie": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "room1": {
+    "description": "Big white room with gilded frescoes.",
+    "neighbours": ["room2", "room3"],
+    "inventory": {
+      "items": [],
+      "weapons": [
+        {"broken_dagger": 1}
+      ],
+      "armors": [
+        {"iron_shield": 1}
+      ],
+      "food": [
+        {"apple": 3},
+        {"carrot_pie": 1}
+      ]
+    },
+    "creatures": []
+  },
+
+  "room2": {
+    "description": "Small room with extremely high ceilings.",
+    "neighbours": ["room1"],
+    "inventory": {
+      "items": [],
+      "weapons": [
+        {"crossbow": 1}
+      ],
+      "armors": [],
+      "food": [
+        {"dirty_water": 1}
+      ]
+    },
+    "creatures":["creature1"]
+  },
+
+  "room3": {
+    "description": "Sunny room covered with water puddles. Don't slip!",
+    "neighbours": ["room1", "room4", "room5"],
+    "inventory": {
+      "items": [],
+      "weapons": [
+        {"silver_axe": 1}
+      ],
+      "armors": [
+        {"leather_cape": 1}
+      ],
+      "food": [
+        {"apple": 1}
+      ]
+    },
+    "creatures":[]
+  },
+
+  "room4": {
+    "description": "Very dark room where every step echoes on the walls.",
+    "neighbours": ["room1", "room2"],
+    "inventory": {
+      "items": [],
+      "weapons": [
+        {"mjolnir": 1}
+      ],
+      "armors": [],
+      "food": []
+    },
+    "creatures":["creature2", "creature1"]
+  },
+  "room5": {
+    "description": "Strange S-shaped room, feeling the least cozy.",
+    "neighbours": ["room3"],
+    "inventory": {
+      "items": [],
+      "weapons": [],
+      "armors": [
+        {"leather_cape": 2},
+        {"iron_shield": 2}
+      ],
+      "food": [
+        {"carrot_pie": 3}
+      ]
+    },
+    "creatures":[]
+  }
+}

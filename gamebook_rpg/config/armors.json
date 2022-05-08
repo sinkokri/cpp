@@ -1,0 +1,13 @@
+{
+  "leather_cape": {
+    "name": "Leather Cape",
+    "defense": 1,
+    "description": "Smells not the best, but does some protection against the sharpest claws."
+  },
+
+  "iron_shield": {
+    "name": "Iron shield",
+    "defense": 2,
+    "description": "A bit heavy one, but doing its job quite nicely."
+  }
+}
